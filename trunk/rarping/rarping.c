@@ -224,7 +224,8 @@ signed char perform_requests ( const opt_t *pst_args_dest )
 		/* nothing to do */
 	}
 
-	/*if (craft_packet(&str_packet))
+#endif 0
+	if (craft_packet(&str_packet))
 		while (++nb_probes < MAX_PROBES)
 			if (send_probe(l_socket, &str_packet) != 1)
 				continue; /* TODO : alert here */
@@ -236,9 +237,9 @@ signed char perform_requests ( const opt_t *pst_args_dest )
 	{
 		fprintf(stderr, "Ouuch!!\nWill now abort!\n");
 		exit(EXIT_FAILURE);
-	}*/
-
-	close(l_socket
+	}
+#endif
+	close(l_socket);
 	
 	return ch_ret_value;
 }
