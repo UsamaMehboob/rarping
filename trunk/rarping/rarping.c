@@ -39,6 +39,8 @@
 #include <sys/types.h> /* for old systems */
 #include <arpa/inet.h> /* htons() ... */ 
 #include <linux/if_ether.h> /* ETH_P_ALL */
+#include <ioctl.h> /* get infos about net device */
+#include <if.h> /* idem */
 
 /* Software Version */
 #define VERSION "<none>"
@@ -59,24 +61,24 @@ extern char *optarg;
  * more : http://www.networksorcery.com/enp/protocol/rarp.htm
  */
 typedef struct {
-	unsigned short hw_type;
-	unsigned short proto_type;
-	unsigned char  hw_len;
-	unsigned char  proto_len;
-	unsigned short opcode;
-	unsigned char  src_mac[6];
-	unsigned char  src_ip[4];
-	unsigned char  target_mac[6];
-	unsigned char  target_ip[4];
+	unsigned short us_hw_type;
+	unsigned short us_proto_type;
+	unsigned char  uch_hw_len;
+	unsigned char  uch_proto_len;
+	unsigned short us_opcode;
+	unsigned char  ucha_src_mac[6];
+	unsigned char  ucha_src_ip[4];
+	unsigned char  ucha_target_mac[6];
+	unsigned char  ucha_target_ip[4];
 } rarp_packet_t;
 
 /*
  * Full Ethernet Trame (IPV4 RARP packet)
  */
 typedef struct {
-	unsigned char  dest_mac[6];
-	unsigned char  sender_mac[6];
-	unsigned short eth_type;
+	unsigned char  ucha_dest_mac[6];
+	unsigned char  ucha_sender_mac[6];
+	unsigned short us_eth_type;
 	rarp_packet_t  str_packet;
 } ether_packet_t;
 
@@ -85,8 +87,8 @@ typedef struct {
 
 /* Contains options/informations given trought command line */
 typedef struct {
-	char * pc_iface; /* Interface to use to send probes */
-	char * pc_dest_mac_addr; /* destination MAC address to craft packet */
+	char * pch_iface; /* Interface to use to send probes */
+	char * pch_dest_mac_addr; /* destination MAC address to craft packet */
 } opt_t;
 
 /* Ethernet header */
@@ -103,7 +105,7 @@ void usage ( void );
  *
  * @see opt
  */
-signed char argument_management ( int i_argc, char **ppc_argv, opt_t *pst_args_dest );
+signed char argument_management ( long l_argc, char **ppch_argv, opt_t *pst_args_dest );
 
 /**
  * @brief perform RARP requests the way defined by user
@@ -114,64 +116,64 @@ signed char perform_requests ( const opt_t *pst_args_dest );
 /* ******************************************************************************************************************************* */
 
 
-int main ( int argc, char **argv )
+int main ( int l_argc, char **ppch_argv )
 {
     /* Return value */
-    unsigned char uc_ret;
-	opt_t args;
+    signed char ch_ret_value;
+	opt_t str_args;
 
-    uc_ret = 0;
+    ch_ret_value = 0;
 
     /* Parse args using getopt to fill a struct (args), return < 0 if problem encountered */
-    if ( argument_management(argc, argv, &args) > 0 )
+    if ( argument_management(l_argc, ppch_argv, &str_args) > 0 )
     {
         /* perform RARP requests as wanted by user (using args struct) */
-        uc_ret = perform_requests(&args);
+        ch_ret_value = perform_requests(&str_args);
     }
     else
     {
         /* If any problem occured, explain the user how to build his command line */
         usage();
         /* and exit < 0 */
-        uc_ret = -1;
+        ch_ret_value = -1;
     }
 
 
     /* Simple exit point */
-    return uc_ret;
+    return ch_ret_value;
 }
 
 
-signed char argument_management ( int i_argc, char **ppc_argv, opt_t *pst_args_dest )
+signed char argument_management ( long l_argc, char **ppch_argv, opt_t *pst_args_dest )
 {
-	char c_ret_value;
-	char c_opt;
+	char ch_ret_value;
+	char ch_opt;
 
 	/* Initialisation */
-	c_ret_value = 1;
-	pst_args_dest->pc_iface = NULL;
-	pst_args_dest->pc_dest_mac_addr = NULL;
+	ch_ret_value = 1;
+	pst_args_dest->pch_iface = NULL;
+	pst_args_dest->pch_dest_mac_addr = NULL;
 	/* ************** */
 
 
 	/* Parsing options args */
-	while ( ( c_opt = getopt( i_argc, ppc_argv, "I:" ) ) != -1 ) 
+	while ( ( ch_opt = getopt( l_argc, ppc_argv, "I:" ) ) != -1 ) 
 	{
-		switch(c_opt)
+		switch(ch_opt)
 		{
 			case 'I'	:	pst_args_dest->pc_iface = optarg;
 							break;
 
 			case 'h'	:
 			case '?'	:
-			default		:	c_ret_value = -1;
+			default		:	ch_ret_value = -1;
 		}
 	}
 	
 	/* parsing non options args */
 	/* The only one must be the MAC Addr we'll request related IP */
-	if (optind < i_argc)
-		pst_args_dest->pc_dest_mac_addr = ppc_argv[optind];
+	if (optind < l_argc)
+		pst_args_dest->pc_dest_mac_addr = ppch_argv[optind];
 	else
 		c_ret_value = -1;
 
@@ -224,24 +226,44 @@ signed char perform_requests ( const opt_t *pst_args_dest )
 		/* nothing to do */
 	}
 
-#endif 0
-	if (craft_packet(&str_packet))
+	if (craft_packet(&str_packet, pst_args_dest->pch_iface))
 		while (++nb_probes < MAX_PROBES)
 			if (send_probe(l_socket, &str_packet) != 1)
-				continue; /* TODO : alert here */
+			{
+				fprintf(stderr, "Can't send request #%d\n", nb_probe);
+			}
 			else
 			{
-				/* nothing to do */
+#ifdef DEBUG
+				fprintf(stdout, "Request #%d sent\n", nb_probe);
+#endif
 			}
 	else
 	{
 		fprintf(stderr, "Ouuch!!\nWill now abort!\n");
 		exit(EXIT_FAILURE);
 	}
-#endif
+	
 	close(l_socket);
 	
 	return ch_ret_value;
 }
 
+
+signed char craft_packet ( ether_packet_t * pstr_packet, char * pch_iface_name, long l_socket )
+{
+	struct ifreq str_device; /* described in man (7) netdevice */
+
+	strncpy(str_device.ifr_name, pch_iface_name, IFNAMESIZ);
+
+	if (ioctl(l_socket, SIOCGIFHWADDR, &str_device) == -1 )
+	{
+		perror("ioctl");
+		exit(EXIT_FAILURE);
+	}
+	else
+	{
+		/* nothing to do */
+	}
+}
 
