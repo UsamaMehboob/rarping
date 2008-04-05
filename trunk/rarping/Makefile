@@ -24,7 +24,7 @@ rsd:
 	gcc -o rarping rarping.c -pedantic
 
 debug:
-	gcc -o rarping rarping.c -DDEBUG -pedantic
+	gcc -o rarping rarping.c -DDEBUG -Wall
 
 clean:
 	rm -f rarping

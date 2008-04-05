@@ -26,104 +26,8 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#include <stdio.h>
-#include <stdlib.h> /* malloc() */
-#include <string.h> /* strncpy(), memcpy() ... */
-#include <unistd.h> /* getopt() : command line parsing */
-#include <errno.h>
-#include <sys/socket.h> /* Network */
-#include <sys/types.h> /* for old systems */
-#include <arpa/inet.h> /* htons() ... */ 
-#include <linux/if_ether.h> /* ETH_P_ALL */
-#include <sys/ioctl.h> /* get infos about net device */
-#include <net/if.h> /* idem */
 
-/* Software Version */
-#define VERSION "<none>"
-/* check if privilieges are granted  */
-#define IS_ROOT ( ((getuid() != 0) || (geteuid() != 0)) ? 0 : 1 )
-/* TODO : this ahs to become an option */
-#define MAX_PROBES 1
-
-
-/*
-extern long optind, opterr, optopt;
-extern char *optarg;
-*/
-
-/** @brief this describes a RARP packet */
-typedef struct {
-	/** @brief Type of hardware */
-	unsigned short us_hwType;
-	/** @brief type of protocol */
-	unsigned short us_protoType;
-	/** @brief length of hardware address in bytes */
-	unsigned char  uc_hwLen;
-	/** @brief length of the protocol address in bytes */
-	unsigned char  uc_protoLen;
-	/** @brief Operation code 3 for a request, 4 for a reply // RFC 903 */
-	unsigned short us_opcode;
-	/** @brief source hardware address */
-	char  cht_srcHwAddr[6];
-	/** @brief IP address of the source host */
-	char  cht_srcIpAddr[4];
-	/** @brief hardware address of the remote host */
-	char  cht_targetHwAddr[6];
-	/** @brief IP address of the remote host */
-	char  cht_targetIpAddr[4];
-} rarpPacket_t;
-
-/** @brief full ethernet trame, MAC headers + RARP packet as described above */
-typedef struct {
-	/** @brief Harware address of the device we send to */
-	unsigned char  ucht_destHwAddr[6];
-	/** @brief Hardware address we of the device we send from */
-	unsigned char  ucht_senderHwAddr[6];
-	/** @brief ethertype (0x8035 for RARP)*/
-	unsigned short us_ethType;
-	/** @brief RARP packet
-	 * @see rarpPacket_t
-	 */
-	rarpPacket_t  str_packet;
-} etherPacket_t;
-
-
-/** @brief Contains options/informations given trought command line */
-typedef struct {
-	/** @brief choosen Interface */
-	char * pch_iface;
-	/** @brief Subject of the request(s) */
-	char * pch_askedHwAddr;
-} opt_t;
-
-
-/* ******************************************************************************************************************************* */
-
-/**
- * @brief Usage() prints out some help to craft a correct command line
- */
-void usage ( void );
-
-/**
- * @brief Parse given arguments and fill an opt structure
- *
- * @see opt
- */
-signed char argumentManagement ( long l_argc, char **ppch_argv, opt_t *pst_argsDest );
-
-/**
- * @brief perform RARP requests the way defined by user
- */
-signed char performRequests ( const opt_t *pst_argsDest );
-
-/**
- * @brief find out and packs the datas we'll send
- */
-signed char craftPacket ( etherPacket_t * pstr_packet, char * pch_ifaceName, long l_socket );
-
-
-/* ******************************************************************************************************************************* */
-/* ******************************************************************************************************************************* */
+#include "rarping.h"
 
 
 int main ( int i_argc, char **ppch_argv )
@@ -223,8 +127,9 @@ signed char performRequests ( const opt_t *pst_argsDest )
 	long l_socket, nbProbes;
 	signed char c_retValue;
 	etherPacket_t str_packet;
+	struct sockaddr_ll str_device; /* device independant physical layer address */
 
-	c_retValue = 1;
+	c_retValue = 0;
 	nbProbes = 0;
 
 	if ((l_socket = socket(PF_PACKET, SOCK_RAW, htons(ETH_P_ALL))) < 0) /* socket opening */
@@ -236,22 +141,24 @@ signed char performRequests ( const opt_t *pst_argsDest )
 	}
 	else
 	{
-		if (craftPacket(&str_packet, pst_argsDest->pch_iface, l_socket))
+		if ( craftPacket(&str_packet, pst_argsDest->pch_iface, &str_device, pst_argsDest->pch_askedHwAddr, l_socket) == 0 )
+		{
 			while (++nbProbes < MAX_PROBES);
-/*				if (send_probe(l_socket, &str_packet) != 1)
+				if (sendProbe(l_socket, &str_packet, &str_device) != 1)
 				{
-					fprintf(stderr, "Can't send request #%d\n", nbProbes);
+					fprintf(stderr, "Can't send request #%ld\n", nbProbes);
 				}
 				else
 				{
 #ifdef DEBUG
-					fprintf(stderr, "Request #%d sent\n", nbProbes);
+					fprintf(stderr, "Request #%ld sent\n", nbProbes);
 #endif
-				}*/
+				}
+		}
 		else
 		{
 			fprintf(stderr, "Can't craft packets\n");
-			exit(EXIT_FAILURE);
+			c_retValue = -2;
 		}
 	
 		close(l_socket);
@@ -261,17 +168,93 @@ signed char performRequests ( const opt_t *pst_argsDest )
 }
 
 
-signed char craftPacket ( etherPacket_t * pstr_packet, char * pch_ifaceName, long l_socket )
+signed char craftPacket ( etherPacket_t * pstr_packet, unsigned char * pch_ifaceName, struct sockaddr_ll * pstr_device, const unsigned char * pch_askedHwAddr, long l_socket )
 {
 	signed char c_retValue;
-	struct ifreq str_device; /* described in man (7) netdevice */
+/*	struct sockaddr_ll str_device; * device independant physical layer address */
 
 	c_retValue = 0;
+	if ( getLowLevelInfos(pstr_device, pch_ifaceName, l_socket) < 0 )
+	{
+		fprintf(stderr, "Critical : can't access device level on %s\n", pch_ifaceName);
+		c_retValue = -1;
+	}
+	else
+	{
+		/* Craft Packet */
+		memset(pstr_packet->ucht_destHwAddr, 0xFF, 6);
+		memcpy(pstr_packet->ucht_senderHwAddr, pstr_device->sll_addr, 6);
+		pstr_packet->us_ethType = htons(ETH_TYPE_RARP);
+		pstr_packet->str_packet.us_hwType = htons(0x01); /* #define ETHERNET 0x01*/
+		pstr_packet->str_packet.us_protoType = htons(0x800); /* #define IP_PROTO 0x800 */
+		pstr_packet->str_packet.uc_hwLen = 6; /* length of mac address in bytes */
+		pstr_packet->str_packet.uc_protoLen = 4; /* Were're in IPV4 here */
+		pstr_packet->str_packet.us_opcode = htons(0x03); /* #define request/reply 3/4 */
+		memcpy(pstr_packet->str_packet.cht_srcHwAddr, pstr_device->sll_addr, 6);
 
-	strncpy(str_device.ifr_name, pch_ifaceName, IFNAMSIZ); /* copy iface name into the ifreq structure we've just declared // IFNAMSIZ defined in net/if.h */
+#define MAC_FIELD(a) &(pstr_packet->str_packet.cht_targetHwAddr[(a)])
+		if (sscanf(pch_askedHwAddr, "%02x:%02x:%02x:%02x:%02x:%02x", MAC_FIELD(0), MAC_FIELD(1), MAC_FIELD(2), MAC_FIELD(3), MAC_FIELD(4), MAC_FIELD(5)) != 6)
+		{
+			fprintf(stderr, "Unrecognised format %s for a MAC address\n", pch_askedHwAddr);
+			fprintf(stderr, "Use : aa:bb:cc:dd:ee:ff notation\n");
+			c_retValue = -2;
+		}
+		else
+		{
+#ifdef DEBUG
+	#define _MAC(i) (pstr_packet->str_packet.cht_targetHwAddr[(i)])
+			fprintf(stderr, "R : %02x:%02x:%02x:%02x:%02x:%02x\n", _MAC(0), _MAC(1), _MAC(2), _MAC(3), _MAC(4), _MAC(5));
+#endif
+			bzero(pstr_packet->str_packet.cht_srcIpAddr, 4);
+			bzero(pstr_packet->str_packet.cht_targetIpAddr, 4);
+		}
+	}
+
+	return c_retValue;
+}
+
+
+char getLowLevelInfos ( struct sockaddr_ll * pstr_device, unsigned char * pch_ifaceName, long l_socket )
+{
+	signed char c_retValue;
+
+	/* --- Init --- */
+	c_retValue = 0;
+	bzero(pstr_device, sizeof(struct sockaddr_ll));
+	/* --- -- --- */
+
+	pstr_device->sll_family = AF_PACKET;
+	pstr_device->sll_protocol = htons(ETH_P_ALL);
+	pstr_device->sll_ifindex = getIfaceIndex(pch_ifaceName, l_socket);
+	pstr_device->sll_halen = 6; /* Hardware address length */
+
+	if ( getLocalHardwareAddress(l_socket, pch_ifaceName, pstr_device->sll_addr) < 0 )
+	{
+		fprintf(stderr, "Can't find local hardware address (MAC address)\n");
+		c_retValue = -1;
+	}
+	else
+	{
+		/* nothing to do */
+	}
+
+	return c_retValue;
+
+}
+
+
+char getLocalHardwareAddress ( long l_socket, unsigned char * pch_ifaceName, unsigned char * mac )
+{
+	char c_retValue;
+	struct ifreq str_tmpIfr; /* described in man (7) netdevice */
+
+	c_retValue = 0;
+	bzero(&str_tmpIfr, sizeof(struct ifreq));
+	strncpy(str_tmpIfr.ifr_name, pch_ifaceName, IFNAMSIZ-1);  /* copy iface name into the ifreq structure we've just declared // IFNAMSIZ defined in net/if.h */
 
 	/* Get local hardware address */
-	if (ioctl(l_socket, SIOCGIFHWADDR, &str_device) == -1 )
+
+	if (ioctl(l_socket, SIOCGIFHWADDR, &str_tmpIfr) == -1 )
 	{
 		perror("ioctl");
 		c_retValue = -1;
@@ -279,11 +262,50 @@ signed char craftPacket ( etherPacket_t * pstr_packet, char * pch_ifaceName, lon
 	else
 	{
 #ifdef DEBUG
-#define MAC(i) (str_device.ifr_hwaddr.sa_data[(i)])
-		fprintf(stderr, "Local MAC address is %2x:%2x:%2x:%2x:%2x:%2x\n", MAC(0), MAC(1), MAC(2), MAC(3), MAC(4), MAC(5));
+	#define MAC(i) (str_tmpIfr.ifr_hwaddr.sa_data[(i)])
+		fprintf(stderr, "Local MAC address is %02x:%02x:%02x:%02x:%02x:%02x\n", MAC(0), MAC(1), MAC(2), MAC(3), MAC(4), MAC(5));
 #endif
+		memcpy(mac, str_tmpIfr.ifr_hwaddr.sa_data, 6); /* cpoy the local MAC address into mac buffer (into sockaddr_sll str_device in fact)*/
 	}
 
+	return c_retValue;
+}
+
+
+unsigned long getIfaceIndex ( unsigned char * pch_ifName, long l_socket )
+{
+	struct ifreq str_tmpIfr;
+
+	bzero(&str_tmpIfr, sizeof(struct ifreq));
+	strncpy(str_tmpIfr.ifr_name, pch_ifName, IF_NAMESIZE-1);
+
+	/* get card Index */
+	if( ioctl( l_socket, SIOCGIFINDEX, &str_tmpIfr) < 0 )
+	{
+		perror("ioctl");
+	}
+	else
+	{
+#ifdef DEBUG
+		fprintf(stderr, "Selected interface's Index is %d\n",str_tmpIfr.ifr_ifindex);
+#endif
+	}
+    
+	return str_tmpIfr.ifr_ifindex;
+}
+
+
+signed char sendProbe ( long l_socket, etherPacket_t * pstr_packet, struct sockaddr_ll * pstr_device )
+{
+	signed char c_retValue;
+
+	c_retValue = 1;
+
+	if (sendto(l_socket, pstr_packet, sizeof(etherPacket_t), 0, (const struct sockaddr *)pstr_device, sizeof(struct sockaddr_ll)) <= 0)
+	{
+		perror("Sendto");
+		c_retValue = -1;
+	}
 	return c_retValue;
 }
 
