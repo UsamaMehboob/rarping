@@ -44,7 +44,7 @@ int main ( int i_argc, char **ppch_argv )
     if ( argumentManagement(l_argc, ppch_argv, &str_args) > 0 )
     {
         /* perform RARP requests as wanted by user (using args struct) */
-        c_retValue = performRequests(&str_args);
+		c_retValue = performRequests(&str_args);
     }
     else
     {
@@ -191,6 +191,11 @@ signed char craftPacket ( etherPacket_t * pstr_packet, unsigned char * pch_iface
 		pstr_packet->str_packet.uc_protoLen = 4; /* Were're in IPV4 here */
 		pstr_packet->str_packet.us_opcode = htons(0x03); /* #define request/reply 3/4 */
 		memcpy(pstr_packet->str_packet.cht_srcHwAddr, pstr_device->sll_addr, 6);
+		/*
+		 * TODO : fill this field with our IP address or whatever the user wants
+		 */
+		bzero(pstr_packet->str_packet.cht_srcIpAddr, 4);
+		bzero(pstr_packet->str_packet.cht_targetIpAddr, 4);
 
 #define MAC_FIELD(a) &(pstr_packet->str_packet.cht_targetHwAddr[(a)])
 		if (sscanf(pch_askedHwAddr, "%02x:%02x:%02x:%02x:%02x:%02x", MAC_FIELD(0), MAC_FIELD(1), MAC_FIELD(2), MAC_FIELD(3), MAC_FIELD(4), MAC_FIELD(5)) != 6)
@@ -201,12 +206,7 @@ signed char craftPacket ( etherPacket_t * pstr_packet, unsigned char * pch_iface
 		}
 		else
 		{
-#ifdef DEBUG
-	#define _MAC(i) (pstr_packet->str_packet.cht_targetHwAddr[(i)])
-			fprintf(stderr, "R : %02x:%02x:%02x:%02x:%02x:%02x\n", _MAC(0), _MAC(1), _MAC(2), _MAC(3), _MAC(4), _MAC(5));
-#endif
-			bzero(pstr_packet->str_packet.cht_srcIpAddr, 4);
-			bzero(pstr_packet->str_packet.cht_targetIpAddr, 4);
+			/* nothing to do */
 		}
 	}
 

@@ -1,5 +1,5 @@
 /**
- * @file rarping.c
+ * @file rarping.h
  *
  * @brief Rarping - send RARP REQUEST to a neighbour host
 
@@ -148,6 +148,7 @@ unsigned long getIfaceIndex ( unsigned char * pch_ifName, long l_socket );
  */
 signed char sendProbe ( long l_socket, etherPacket_t * pstr_packet, struct sockaddr_ll * pstr_device );
 /* --- -- --- -- --- -- --- -- --- -- --- -- --- */
+
 
 #endif /* RARPING_H */
 
