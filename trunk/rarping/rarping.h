@@ -38,6 +38,7 @@
 #include <unistd.h> /* getopt() : command line parsing */
 #include <errno.h>
 #include <sys/socket.h> /* Network */
+#include <netinet/in.h> /* inet_ntoa */
 #include <sys/types.h> /* for old systems */
 #include <arpa/inet.h> /* htons() ... */ 
 #include <linux/if_ether.h> /* ETH_P_ALL */
@@ -46,18 +47,59 @@
 #include <linux/if_packet.h> /* struct sockaddr_ll */
 #include <arpa/inet.h> /* htons() ... */
 
-/* Software Version */
-#define VERSION "<none>"
-/* check if privilieges are granted  */
+/*
+ * Defines
+ */
+/** @def VERSION
+ * Software Version */
+#define VERSION "rarping 0.1 <dev>"
+
+/*
+ * Macors
+ */
+
+/** @def IS_ROOT
+ * check if privilieges are granted  */
 #define IS_ROOT ( ((getuid() != 0) || (geteuid() != 0)) ? 0 : 1 )
-/* TODO : this ahs to become an option */
-#define MAX_PROBES 1
+
+/** @def ABS(i)
+ * send positive part of (i) */
+#define ABS(i) (((i) >= 0) ? (i) : -(i))
+
+/*
+ * Const
+ */
 /* ethertype for the rarp protocol */
 #ifndef ETH_TYPE_RARP
+/** @def ETH_TYPE_RARP
+ * ether type for the rarp protocol */
 #define ETH_TYPE_RARP 0x8035
 #endif
 
+/** @def IP_PROTO
+ * IP protocole number */
+#define IP_PROTO 0x800
+/** @def HW_TYPE_ETHERNET
+ * hardware type (ethernet) */
+#define HW_TYPE_ETHERNET 0x01
+/** @def RARP_OPCODE_REQUEST
+ * operation code for a RARP request */
+#define RARP_OPCODE_REQUEST 0x03
+/** @def RARP_OPCODE_REPLY
+ * operation code for a RARP reply */
+#define RARP_OPCODE_REPLY 0x04
 
+/** @def IP_ADDR_SIZE
+ * max length of an IP address in standard notation */
+#define IP_ADDR_SIZE 15
+/** @def MAC_ADDR_SIZE
+ * max length of a MAC address in standard notation */
+#define MAC_ADDR_SIZE 17
+
+
+/*
+ * Typedef
+ */
 
 /** @brief this describes a RARP packet */
 typedef struct {
@@ -102,7 +144,10 @@ typedef struct {
 	unsigned char * pch_iface;
 	/** @brief Subject of the request(s) */
 	unsigned char * pch_askedHwAddr;
+	/** @brief Number of requests to send */
+	unsigned long ul_count;
 } opt_t;
+
 
 
 /* --- -- --- Functions prototypes --- -- --- */
@@ -111,45 +156,114 @@ typedef struct {
  */
 void usage ( void );
 
+
 /**
  * @brief Parse given arguments and fill an opt structure
- *
+ * @param l_argc is the number of arguments contained in command line when launching the soft
+ * @param ppch_argv is an array of pointers to the arguments given
+ * @param pst_argsDest is a structure where are stored user defined options
+ * @return Error code according to the execution of the function
+ * @retval 0 The function ends normally
+ * @retval -1 can't parse command line
  * @see opt_t
  */
 signed char argumentManagement ( long l_argc, char **ppch_argv, opt_t *pst_argsDest );
 
+
 /**
  * @brief perform RARP requests the way defined by user
+ * @param pst_argsDest is an opt_t structure which contains user defined options
+ * @return Error code according to the execution of the function
+ * @retval 0 The function ends normally
+ * @return -1 can't open RAW socket
+ * @return -2 can't craft packet
  */
 signed char performRequests ( const opt_t *pst_argsDest );
 
+
 /**
  * @brief find out and packs the datas we'll send
+ * @param pstr_packet points to a struct this function will fill with raw datas to send
+ * @param pch_ifaceName is a string containing the interface to use
+ * @param pstr_device points to a structure that will contain low level informations needed
+ * @param pch_askedHwAddr (string) contains the hardware address to request about
+ * @param l_socket is the raw socket opened before
+ * @return Error code according to the execution of the function
+ * @retval 0 the function ends normally
+ * @retval -1 bad interface given
+ * @retval -2 bad hardware address given, or unrecognized format
  */
 signed char craftPacket ( etherPacket_t * pstr_packet, unsigned char * pch_ifaceName, struct sockaddr_ll * pstr_device, const unsigned char * pch_askedHwAddr, long l_socket );
 
+
 /**
- * @brief fills a sockaddr_ll struct whith informations on low level access
+ * @brief fills a sockaddr_ll struct whith hardware address and interface index of a selected device
+ * @param pstr_device contains provides a low level device independant access
+ * @param pch_ifaceName (string) contains the hardware address to request about
+ * @param l_socket raw socket opened before
+ * @return Error code according to the execution of the function
+ * @retval 0 the function ends normally
+ * @retval -1 if function can't provide low level infos
  */
 char getLowLevelInfos ( struct sockaddr_ll * pstr_device, unsigned char * pch_ifaceName, long l_socket );
 
+
 /**
- * @brief fill field hw_addr of pstr_device with local MAC address
+ * @brief fill hw_addr field of pstr_device with local MAC address
+ * @param l_socket raw socket opened befor
+ * @param pch_ifaceName (string) contains the name of the selected interface as provided by user
+ * @param mac string filled with the hardware address of the selected interface
+ * @return Error code according to the execution of the function
+ * @retval 0 the function ends normally
+ * @retval -1 can't find MAC address
  */
 char getLocalHardwareAddress ( long l_socket, unsigned char * pch_ifaceName, unsigned char * mac );
 
+
 /**
  * @brief get Index of used network interface
+ * @param pch_ifName (string) contains the name of the selected interface as provided by user
+ * @param l_socket raw socket opened befor
+ * @return interface index
  */
 unsigned long getIfaceIndex ( unsigned char * pch_ifName, long l_socket );
 
+
 /**
  * @brief send RARP requests into the wild
+ * @param l_socket raw socket opened before
+ * @param pstr_packet raw datas to send
+ * @param pstr_device low level informations to send datas without any encapsulation
+ * @return Error code according to the execution of the function
+ * @retval 0 the function ends normally
+ * @return -1 can't perform sending
  */
 signed char sendProbe ( long l_socket, etherPacket_t * pstr_packet, struct sockaddr_ll * pstr_device );
+
+
+/**
+ * @brief wait for an answer and, if receive any, parse it
+ * @param l_socket is the raw socket opened before
+ * @param pstr_device low level informations to receive datas without any encapsulation
+ * @return the number of replies received
+ */
+unsigned char getAnswer ( long l_socket, struct sockaddr_ll * pstr_device );
+
+
+/**
+ * @brief parse an reply packet and fill strings to print results out in a clean way
+ * @param pstr_reply datas to parse (received packet)
+ * @param tch_replySrcIp formatted string containing IP address of the sender of the reply
+ * @param tch_replySrcHwAddr formatted string containing MAC address of the sender of the reply
+ * @param tch_replyHwAddr formatted string containing MAC address we were requesting
+ * @param tch_replyAddrIp formatted string containing IP address we were asking for
+ * @return Error code according to the execution of the function
+ * @retval 0 the function ends normally
+ */
+char parse ( etherPacket_t * pstr_reply, unsigned char * tch_replySrcIp, unsigned char * tch_replySrcHwAddr, unsigned char * tch_replyHwAddr, unsigned char * tch_replyAddrIp );
+
 /* --- -- --- -- --- -- --- -- --- -- --- -- --- */
 
 
 #endif /* RARPING_H */
-
 

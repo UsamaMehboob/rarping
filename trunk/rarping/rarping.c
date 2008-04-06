@@ -69,17 +69,26 @@ signed char argumentManagement ( long l_argc, char **ppch_argv, opt_t *pst_argsD
 	c_retValue = 1;
 	pst_argsDest->pch_iface = NULL;
 	pst_argsDest->pch_askedHwAddr = NULL;
+	pst_argsDest->ul_count = 0;
 	/* ************** */
 
 
 	/* Parsing options args */
-	while ( ( ch_opt = getopt( l_argc, ppch_argv, "I:" ) ) != -1 ) 
+	while ( ( ch_opt = getopt( l_argc, ppch_argv, "I:c:vh" ) ) != -1 ) 
 	{
 		switch(ch_opt)
 		{
-			case 'I'	:	pst_argsDest->pch_iface = optarg;
+			case 'I'	:	pst_argsDest->pch_iface = (unsigned char *)optarg;
 							break;
 
+			case 'c'	:	pst_argsDest->ul_count = ABS(atol(optarg)); /* < 0 were stupid */
+							if (pst_argsDest->ul_count == 0)
+								c_retValue = -1;
+							break;
+
+			case 'v'	:	fprintf(stdout, "%s\n", VERSION);
+							exit(1);
+							break;
 			case 'h'	:
 			case '?'	:
 			default		:	c_retValue = -1;
@@ -89,7 +98,7 @@ signed char argumentManagement ( long l_argc, char **ppch_argv, opt_t *pst_argsD
 	/* parsing non options args */
 	/* The only one must be the MAC Addr we'll request related IP */
 	if (optind < l_argc)
-		pst_argsDest->pch_askedHwAddr = ppch_argv[optind];
+		pst_argsDest->pch_askedHwAddr = (unsigned char *)ppch_argv[optind];
 	else
 		c_retValue = -1;
 
@@ -101,10 +110,8 @@ signed char argumentManagement ( long l_argc, char **ppch_argv, opt_t *pst_argsD
 		/* nothing to do */
 	}
 
-#ifdef DEBUG
-	fprintf(stderr, "Iface : %s\n", pst_argsDest->pch_iface);
-	fprintf(stderr, "Request about : %s\n", pst_argsDest->pch_askedHwAddr);
-#endif
+	/* Most important informations */
+	fprintf(stdout, "RARPING %s on %s\n", pst_argsDest->pch_askedHwAddr, pst_argsDest->pch_iface);
 
 	return c_retValue;
 }
@@ -112,11 +119,13 @@ signed char argumentManagement ( long l_argc, char **ppch_argv, opt_t *pst_argsD
 
 void usage ( void )
 {
-	printf("\n-=] Rarp requests sender [=-\n");
-	printf("           ****          \n");
-	printf("\nVersion : %s\n", VERSION);
-	printf("Usage : ./rarping -I [interface] [request MAC address]\n");
-	printf("For example : ./rarping -I eth0 00:03:13:37:be:ef\n\n");
+	fprintf(stderr, "Usage : ./rarping [-h] [-c count] [-I interface] request_MAC_address\n");
+	fprintf(stderr, "\t-h : print this screen and exit\n");
+	fprintf(stderr, "\t-V : print version and exit\n");
+	fprintf(stderr, "\t-c count : send [count] request(s) and exit\n");
+	fprintf(stderr, "\t-I interface : network device to use\n");
+	fprintf(stderr, "\trequest_MAC_address : hardware address we request associated IP address\n");
+	fprintf(stderr, "For example : ./rarping -I eth0 00:03:13:37:be:ef\n");
 
 	return;
 }
@@ -124,15 +133,16 @@ void usage ( void )
 
 signed char performRequests ( const opt_t *pst_argsDest )
 {
-	long l_socket, nbProbes;
+	long l_socket, l_nbProbes, l_receivedReplies;
 	signed char c_retValue;
 	etherPacket_t str_packet;
 	struct sockaddr_ll str_device; /* device independant physical layer address */
 
 	c_retValue = 0;
-	nbProbes = 0;
+	l_nbProbes = 0;
+	l_receivedReplies = 0;
 
-	if ((l_socket = socket(PF_PACKET, SOCK_RAW, htons(ETH_P_ALL))) < 0) /* socket opening */
+	if ((l_socket = socket(PF_PACKET, SOCK_RAW, htons(ETH_P_ALL))) < 0) /* opening socket */
 	{
 		perror("socket");
 		if (!IS_ROOT)
@@ -143,16 +153,18 @@ signed char performRequests ( const opt_t *pst_argsDest )
 	{
 		if ( craftPacket(&str_packet, pst_argsDest->pch_iface, &str_device, pst_argsDest->pch_askedHwAddr, l_socket) == 0 )
 		{
-			while (++nbProbes < MAX_PROBES);
+			while ( (++l_nbProbes <= pst_argsDest->ul_count) || (!(pst_argsDest->ul_count)) )/* infinite loop if no count specified */
 				if (sendProbe(l_socket, &str_packet, &str_device) != 1)
 				{
-					fprintf(stderr, "Can't send request #%ld\n", nbProbes);
+					fprintf(stderr, "Can't send request #%ld\n", l_nbProbes);
 				}
 				else
 				{
 #ifdef DEBUG
-					fprintf(stderr, "Request #%ld sent\n", nbProbes);
+					fprintf(stderr, "Request #%ld sent\n", l_nbProbes);
 #endif
+					/* getAnswer function returns the number of replies received */
+					l_receivedReplies += getAnswer(l_socket, &str_device); /* wait for an answer and parse it */
 				}
 		}
 		else
@@ -160,10 +172,19 @@ signed char performRequests ( const opt_t *pst_argsDest )
 			fprintf(stderr, "Can't craft packets\n");
 			c_retValue = -2;
 		}
-	
+		/* Print out results if at least one request sent */
+		if (l_nbProbes > 0)
+		{
+			fprintf(stdout, "Sent %ld request(s)\n", l_nbProbes-1);
+			fprintf(stdout, "Received %ld response(s)\n", l_receivedReplies);
+		}
+		else
+		{
+			/* nothing to do */
+		}
 		close(l_socket);
 	}
-	
+
 	return c_retValue;
 }
 
@@ -171,9 +192,15 @@ signed char performRequests ( const opt_t *pst_argsDest )
 signed char craftPacket ( etherPacket_t * pstr_packet, unsigned char * pch_ifaceName, struct sockaddr_ll * pstr_device, const unsigned char * pch_askedHwAddr, long l_socket )
 {
 	signed char c_retValue;
+	struct in_addr str_localIpAddr;
 /*	struct sockaddr_ll str_device; * device independant physical layer address */
 
 	c_retValue = 0;
+	bzero(&str_localIpAddr, sizeof(struct in_addr));
+/* TODO : local IP address will be automatically filled or specified by user roadcast */
+#define LOCAL_ADDR "192.168.1.16"
+	inet_aton(LOCAL_ADDR, &str_localIpAddr);
+
 	if ( getLowLevelInfos(pstr_device, pch_ifaceName, l_socket) < 0 )
 	{
 		fprintf(stderr, "Critical : can't access device level on %s\n", pch_ifaceName);
@@ -185,20 +212,22 @@ signed char craftPacket ( etherPacket_t * pstr_packet, unsigned char * pch_iface
 		memset(pstr_packet->ucht_destHwAddr, 0xFF, 6);
 		memcpy(pstr_packet->ucht_senderHwAddr, pstr_device->sll_addr, 6);
 		pstr_packet->us_ethType = htons(ETH_TYPE_RARP);
-		pstr_packet->str_packet.us_hwType = htons(0x01); /* #define ETHERNET 0x01*/
-		pstr_packet->str_packet.us_protoType = htons(0x800); /* #define IP_PROTO 0x800 */
+		pstr_packet->str_packet.us_hwType = htons(HW_TYPE_ETHERNET);
+		pstr_packet->str_packet.us_protoType = htons(IP_PROTO);
 		pstr_packet->str_packet.uc_hwLen = 6; /* length of mac address in bytes */
 		pstr_packet->str_packet.uc_protoLen = 4; /* Were're in IPV4 here */
-		pstr_packet->str_packet.us_opcode = htons(0x03); /* #define request/reply 3/4 */
+		pstr_packet->str_packet.us_opcode = htons(RARP_OPCODE_REQUEST);
 		memcpy(pstr_packet->str_packet.cht_srcHwAddr, pstr_device->sll_addr, 6);
 		/*
 		 * TODO : fill this field with our IP address or whatever the user wants
-		 */
-		bzero(pstr_packet->str_packet.cht_srcIpAddr, 4);
+		 *
+		bzero(pstr_packet->str_packet.cht_srcIpAddr, 4);*/
+		memcpy(pstr_packet->str_packet.cht_srcIpAddr, (char *)&str_localIpAddr, 4);
+
 		bzero(pstr_packet->str_packet.cht_targetIpAddr, 4);
 
-#define MAC_FIELD(a) &(pstr_packet->str_packet.cht_targetHwAddr[(a)])
-		if (sscanf(pch_askedHwAddr, "%02x:%02x:%02x:%02x:%02x:%02x", MAC_FIELD(0), MAC_FIELD(1), MAC_FIELD(2), MAC_FIELD(3), MAC_FIELD(4), MAC_FIELD(5)) != 6)
+#define MAC_FIELD(a) (&(pstr_packet->str_packet.cht_targetHwAddr[(a)]))
+		if (sscanf(pch_askedHwAddr, "%02hhx:%02hhx:%02hhx:%02hhx:%02hhx:%02hhx", MAC_FIELD(0), MAC_FIELD(1), MAC_FIELD(2), MAC_FIELD(3), MAC_FIELD(4), MAC_FIELD(5)) != 6)
 		{
 			fprintf(stderr, "Unrecognised format %s for a MAC address\n", pch_askedHwAddr);
 			fprintf(stderr, "Use : aa:bb:cc:dd:ee:ff notation\n");
@@ -261,11 +290,7 @@ char getLocalHardwareAddress ( long l_socket, unsigned char * pch_ifaceName, uns
 	}
 	else
 	{
-#ifdef DEBUG
-	#define MAC(i) (str_tmpIfr.ifr_hwaddr.sa_data[(i)])
-		fprintf(stderr, "Local MAC address is %02x:%02x:%02x:%02x:%02x:%02x\n", MAC(0), MAC(1), MAC(2), MAC(3), MAC(4), MAC(5));
-#endif
-		memcpy(mac, str_tmpIfr.ifr_hwaddr.sa_data, 6); /* cpoy the local MAC address into mac buffer (into sockaddr_sll str_device in fact)*/
+		memcpy(mac, str_tmpIfr.ifr_hwaddr.sa_data, 6); /* cpoy the local MAC address into mac buffer (into struct sockaddr_sll str_device in fact)*/
 	}
 
 	return c_retValue;
@@ -286,9 +311,7 @@ unsigned long getIfaceIndex ( unsigned char * pch_ifName, long l_socket )
 	}
 	else
 	{
-#ifdef DEBUG
-		fprintf(stderr, "Selected interface's Index is %d\n",str_tmpIfr.ifr_ifindex);
-#endif
+		/* nothing to do */
 	}
     
 	return str_tmpIfr.ifr_ifindex;
@@ -307,5 +330,80 @@ signed char sendProbe ( long l_socket, etherPacket_t * pstr_packet, struct socka
 		c_retValue = -1;
 	}
 	return c_retValue;
+}
+
+
+unsigned char getAnswer ( long l_socket, struct sockaddr_ll * pstr_device )
+{
+	etherPacket_t str_reply; /* to store received datas */
+	struct in_addr str_replySrcIpAddr; /* to store the IP address of the sender of the replies */
+	/* strings to print out results in a clean way */
+	unsigned char tch_replySrcIp[IP_ADDR_SIZE+1], tch_replySrcHwAddr[MAC_ADDR_SIZE+1], tch_replyHwAddr[MAC_ADDR_SIZE+1], tch_replyAddrIp[IP_ADDR_SIZE+1];
+	unsigned char c_retValue;
+
+	/* usual initialisation */
+	c_retValue = 1;
+	bzero(&str_reply, sizeof(etherPacket_t));
+	/* strings to print results out */
+	bzero(tch_replySrcIp, IP_ADDR_SIZE+1);
+	bzero(tch_replySrcHwAddr, MAC_ADDR_SIZE+1);
+	bzero(tch_replyHwAddr, MAC_ADDR_SIZE+1);
+	bzero(tch_replyAddrIp, IP_ADDR_SIZE+1);
+	/* --- -- --- -- --- -- --- -- */
+	
+#ifdef DEBUG
+	fprintf(stderr,"Waiting for an reply...\n");
+#endif
+
+	/* Reception */
+	if ( recvfrom(l_socket, &str_reply, sizeof(etherPacket_t), 0, (struct sockaddr *)pstr_device, (unsigned int *)sizeof(struct sockaddr_ll)) > 0 )
+	{
+		/* If received packet is a RARP reply */
+		if ( (str_reply.us_ethType == htons(ETH_TYPE_RARP)) && (str_reply.str_packet.us_opcode == htons(RARP_OPCODE_REPLY)) )
+		{
+			/* we craft strings to print results using received packet */
+			parse(&str_reply, tch_replySrcIp, tch_replySrcHwAddr, tch_replyHwAddr, tch_replyAddrIp);
+			fprintf(stdout, "Reply received from %s (%s) : %s has %s\n", tch_replySrcIp, tch_replySrcHwAddr, tch_replyHwAddr, tch_replyAddrIp);
+		}
+	}
+	else
+	{
+		c_retValue = 0;
+	}
+
+	return c_retValue;
+}
+
+
+char parse ( etherPacket_t * pstr_reply, unsigned char * tch_replySrcIp, unsigned char * tch_replySrcHwAddr, unsigned char * tch_replyHwAddr, unsigned char * tch_replyAddrIp )
+{
+	struct in_addr str_tmpIpAddr;
+
+	/* Fill the string tch_srcIpAddr, that is the IP address of the reply sender with the address contained in received packet */
+	bzero(&str_tmpIpAddr, sizeof(struct in_addr));
+	memcpy(&str_tmpIpAddr, pstr_reply->str_packet.cht_srcIpAddr, 4);
+	strncpy(tch_replySrcIp, inet_ntoa(str_tmpIpAddr), IP_ADDR_SIZE);
+
+	/* 
+	 * Fill the string tch_replyIpAddr, that is the IP address of the host which MAC address is the one we requested about
+	 * This is the "real" answer to the request sent
+	 */
+	bzero(&str_tmpIpAddr, sizeof(struct in_addr));
+	memcpy(&str_tmpIpAddr, pstr_reply->str_packet.cht_targetIpAddr, 4);
+	strncpy(tch_replyAddrIp, inet_ntoa(str_tmpIpAddr), IP_ADDR_SIZE); /* this is the answer */
+
+	/* 
+	 * Fill the string tch_replySrcHwAddr with formatted MAC address contained in received datas
+	 * This is the hardware address of the sender of the parsed reply
+	 */
+#define MAC(i) pstr_reply->str_packet.cht_srcHwAddr[(i)]
+	snprintf(tch_replySrcHwAddr, MAC_ADDR_SIZE+1, "%02x:%02x:%02x:%02x:%02x:%02x", MAC(0), MAC(1), MAC(2), MAC(3), MAC(4), MAC(5));
+
+	/* The same way, but with Hardware Address of the host we requested about (this must be the same than the one specified by user)) */
+#define _MAC(i) pstr_reply->str_packet.cht_targetHwAddr[(i)]
+	snprintf(tch_replyHwAddr, MAC_ADDR_SIZE+1, "%02x:%02x:%02x:%02x:%02x:%02x", _MAC(0), _MAC(1), _MAC(2), _MAC(3), _MAC(4), _MAC(5));
+	/* --- -- --- -- --- */
+
+	return 0;
 }
 

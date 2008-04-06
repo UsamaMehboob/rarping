@@ -20,11 +20,11 @@
 
 all: rarping
 
-rsd:
-	gcc -o rarping rarping.c -pedantic
+rarping: rarping.c rarping.h
+	gcc -o rarping rarping.c
 
-debug:
-	gcc -o rarping rarping.c -DDEBUG -Wall
+debug: rarping.c rarping.h
+	gcc -o rarping rarping.c -DDEBUG -pedantic
 
 clean:
 	rm -f rarping
