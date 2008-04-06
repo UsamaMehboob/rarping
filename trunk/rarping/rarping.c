@@ -3,12 +3,11 @@
  *
  * @brief Rarping - send RARP REQUEST to a neighbour host
  * @see RFC 903
-
  *
- * $Author: $
- * $Date: $
+ * $Author: Henri Doreau <henri.doreau@gmail.com>$
+ * $Date: dimanche 6 avril 2008, 21:17:46 (UTC+0200)$
  *
- * $Revision: $
+ * $Revision: 10$
  */
 
 /* 
@@ -108,11 +107,8 @@ signed char argumentManagement ( long l_argc, char **ppch_argv, opt_t *pst_argsD
 		c_retValue = -1;
 	else
 	{
-		/* nothing to do */
+		fprintf(stdout, "RARPING %s on %s\n", pst_argsDest->pch_askedHwAddr, pst_argsDest->pch_iface);
 	}
-
-	/* Most important informations */
-	fprintf(stdout, "RARPING %s on %s\n", pst_argsDest->pch_askedHwAddr, pst_argsDest->pch_iface);
 
 	return c_retValue;
 }
