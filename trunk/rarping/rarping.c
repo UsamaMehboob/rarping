@@ -2,6 +2,7 @@
  * @file rarping.c
  *
  * @brief Rarping - send RARP REQUEST to a neighbour host
+ * @see RFC 903
 
  *
  * $Author: $
@@ -192,14 +193,9 @@ signed char performRequests ( const opt_t *pst_argsDest )
 signed char craftPacket ( etherPacket_t * pstr_packet, unsigned char * pch_ifaceName, struct sockaddr_ll * pstr_device, const unsigned char * pch_askedHwAddr, long l_socket )
 {
 	signed char c_retValue;
-	struct in_addr str_localIpAddr;
-/*	struct sockaddr_ll str_device; * device independant physical layer address */
 
 	c_retValue = 0;
-	bzero(&str_localIpAddr, sizeof(struct in_addr));
-/* TODO : local IP address will be automatically filled or specified by user roadcast */
-#define LOCAL_ADDR "192.168.1.16"
-	inet_aton(LOCAL_ADDR, &str_localIpAddr);
+
 
 	if ( getLowLevelInfos(pstr_device, pch_ifaceName, l_socket) < 0 )
 	{
@@ -218,14 +214,10 @@ signed char craftPacket ( etherPacket_t * pstr_packet, unsigned char * pch_iface
 		pstr_packet->str_packet.uc_protoLen = 4; /* Were're in IPV4 here */
 		pstr_packet->str_packet.us_opcode = htons(RARP_OPCODE_REQUEST);
 		memcpy(pstr_packet->str_packet.cht_srcHwAddr, pstr_device->sll_addr, 6);
-		/*
-		 * TODO : fill this field with our IP address or whatever the user wants
-		 *
-		bzero(pstr_packet->str_packet.cht_srcIpAddr, 4);*/
-		memcpy(pstr_packet->str_packet.cht_srcIpAddr, (char *)&str_localIpAddr, 4);
-
+		/* In a RARP request these fields are undefined */
+		bzero(pstr_packet->str_packet.cht_srcIpAddr, 4);
 		bzero(pstr_packet->str_packet.cht_targetIpAddr, 4);
-
+		/* --- -- --- -- --- -- --- -- --- -- --- -- -- */
 #define MAC_FIELD(a) (&(pstr_packet->str_packet.cht_targetHwAddr[(a)]))
 		if (sscanf(pch_askedHwAddr, "%02hhx:%02hhx:%02hhx:%02hhx:%02hhx:%02hhx", MAC_FIELD(0), MAC_FIELD(1), MAC_FIELD(2), MAC_FIELD(3), MAC_FIELD(4), MAC_FIELD(5)) != 6)
 		{
@@ -268,7 +260,6 @@ char getLowLevelInfos ( struct sockaddr_ll * pstr_device, unsigned char * pch_if
 	}
 
 	return c_retValue;
-
 }
 
 
