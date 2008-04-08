@@ -1,0 +1,22 @@
+
+           ** RARPING TODO FILE **
+          -------------------------
+
+
+--> Project
+[ ] split the biggest functions into smaller ones
+[ ] dispatch code into smaller files
+[ ] write man page
+
+-- > SOFTWARE
+[ ] verbosity control
+[ ] timing
+[ ] signal handler
+
+-- > OPTIONS
+[ ] Spoof MAC address
+[ ] Spoof IP
+[ ] send RARP replies instead of requests
+[ ] exit after a reply
+[ ] interval between two probes
+

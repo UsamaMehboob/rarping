@@ -18,13 +18,13 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #
 
-all: rarping
+all: _rarping
 
-rarping: rarping.c rarping.h
-	gcc -o rarping rarping.c
+_rarping: rarping.c rarping.h rarping
+	gcc -o rarping rarping.c -pedantic
 
-debug: rarping.c rarping.h
-	gcc -o rarping rarping.c -DDEBUG -pedantic
+debug: rarping.c rarping.h rarping
+	gcc -g -o rarping rarping.c -DDEBUG -pedantic
 
 clean:
 	rm -f rarping

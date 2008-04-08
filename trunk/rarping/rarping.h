@@ -51,7 +51,7 @@
  */
 /** @def VERSION
  * Software Version */
-#define VERSION "rarping 0.1 <dev>"
+#define VERSION "rarping 0.1 alpha"
 
 /*
  * Macors
@@ -113,21 +113,21 @@ typedef struct {
 	/** @brief Operation code 3 for a request, 4 for a reply // RFC 903 */
 	unsigned short us_opcode;
 	/** @brief source hardware address */
-	unsigned char  cht_srcHwAddr[6];
+	unsigned char  uct_srcHwAddr[6];
 	/** @brief IP address of the source host */
-	unsigned char  cht_srcIpAddr[4];
+	unsigned char  uct_srcIpAddr[4];
 	/** @brief hardware address of the remote host */
-	unsigned char  cht_targetHwAddr[6];
+	unsigned char  uct_targetHwAddr[6];
 	/** @brief IP address of the remote host */
-	unsigned char  cht_targetIpAddr[4];
+	unsigned char  uct_targetIpAddr[4];
 } rarpPacket_t;
 
 /** @brief full ethernet trame, MAC headers + RARP packet as described above */
 typedef struct {
 	/** @brief Harware address of the device we send to */
-	unsigned char  ucht_destHwAddr[6];
+	unsigned char  uct_destHwAddr[6];
 	/** @brief Hardware address we of the device we send from */
-	unsigned char  ucht_senderHwAddr[6];
+	unsigned char  uct_senderHwAddr[6];
 	/** @brief ethertype (0x8035 for RARP)*/
 	unsigned short us_ethType;
 	/** @brief RARP packet
@@ -140,9 +140,9 @@ typedef struct {
 /** @brief Contains options/informations given trought command line */
 typedef struct {
 	/** @brief choosen Interface */
-	unsigned char * pch_iface;
+	char * pch_iface;
 	/** @brief Subject of the request(s) */
-	unsigned char * pch_askedHwAddr;
+	char * pch_askedHwAddr;
 	/** @brief Number of requests to send */
 	unsigned long ul_count;
 } opt_t;
@@ -166,7 +166,7 @@ void usage ( void );
  * @retval -1 can't parse command line
  * @see opt_t
  */
-signed char argumentManagement ( long l_argc, char **ppch_argv, opt_t *pst_argsDest );
+signed char argumentManagement ( long l_argc, char **ppch_argv, opt_t *pstr_argsDest );
 
 
 /**
@@ -177,7 +177,7 @@ signed char argumentManagement ( long l_argc, char **ppch_argv, opt_t *pst_argsD
  * @return -1 can't open RAW socket
  * @return -2 can't craft packet
  */
-signed char performRequests ( const opt_t *pst_argsDest );
+signed char performRequests ( const opt_t *pstr_argsDest );
 
 
 /**
@@ -192,7 +192,7 @@ signed char performRequests ( const opt_t *pst_argsDest );
  * @retval -1 bad interface given
  * @retval -2 bad hardware address given, or unrecognized format
  */
-signed char craftPacket ( etherPacket_t * pstr_packet, unsigned char * pch_ifaceName, struct sockaddr_ll * pstr_device, const unsigned char * pch_askedHwAddr, long l_socket );
+signed char craftPacket ( etherPacket_t * pstr_packet, char * pch_ifaceName, struct sockaddr_ll * pstr_device, const char * pch_askedHwAddr, long l_socket );
 
 
 /**
@@ -204,7 +204,7 @@ signed char craftPacket ( etherPacket_t * pstr_packet, unsigned char * pch_iface
  * @retval 0 the function ends normally
  * @retval -1 if function can't provide low level infos
  */
-char getLowLevelInfos ( struct sockaddr_ll * pstr_device, unsigned char * pch_ifaceName, long l_socket );
+char getLowLevelInfos ( struct sockaddr_ll * pstr_device, char * pch_ifaceName, long l_socket );
 
 
 /**
@@ -216,7 +216,7 @@ char getLowLevelInfos ( struct sockaddr_ll * pstr_device, unsigned char * pch_if
  * @retval 0 the function ends normally
  * @retval -1 can't find MAC address
  */
-char getLocalHardwareAddress ( long l_socket, unsigned char * pch_ifaceName, unsigned char * mac );
+char getLocalHardwareAddress ( long l_socket, char * pch_ifaceName, unsigned char * puc_mac );
 
 
 /**
@@ -225,7 +225,7 @@ char getLocalHardwareAddress ( long l_socket, unsigned char * pch_ifaceName, uns
  * @param l_socket raw socket opened befor
  * @return interface index
  */
-unsigned long getIfaceIndex ( unsigned char * pch_ifName, long l_socket );
+unsigned long getIfaceIndex ( char * pch_ifName, long l_socket );
 
 
 /**
@@ -259,7 +259,7 @@ unsigned char getAnswer ( long l_socket, struct sockaddr_ll * pstr_device );
  * @return Error code according to the execution of the function
  * @retval 0 the function ends normally
  */
-char parse ( etherPacket_t * pstr_reply, unsigned char * tch_replySrcIp, unsigned char * tch_replySrcHwAddr, unsigned char * tch_replyHwAddr, unsigned char * tch_replyAddrIp );
+char parse ( etherPacket_t * pstr_reply, char tch_replySrcIp[], char tch_replySrcHwAddr[], char tch_replyHwAddr[], char tch_replyAddrIp[] );
 
 /* --- -- --- -- --- -- --- -- --- -- --- -- --- */
 

@@ -1,0 +1,11 @@
+version 0.1 alpha (08-04-2008)
+==========================================
+Rarping now send requests, wait for replies.
+In case rarping receives a reply, it can parse it and print it out in a clean way.
+User can specify the number of requests to perform (infinite by default)
+Doxygen documentation has been generated (under GNU free documentation licence)
+A few files added (this changelog, TODO...)
+
+version 0.1 <dev> (29-03-2008)
+==========================================
+    Starting Rarping

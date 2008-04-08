@@ -4,10 +4,10 @@
  * @brief Rarping - send RARP REQUEST to a neighbour host
  * @see RFC 903
  *
- * $Author: Henri Doreau <henri.doreau@gmail.com>$
- * $Date: dimanche 6 avril 2008, 21:17:46 (UTC+0200)$
+ * $Author: Henri Doreau <henri.doreau@gmail.com> $
+ * $Date: dimanche 6 avril 2008, 21:17:46 (UTC+0200) $
  *
- * $Revision: 10$
+ * $Revision: 10 $
  */
 
 /* 
@@ -60,33 +60,33 @@ int main ( int i_argc, char **ppch_argv )
 }
 
 
-signed char argumentManagement ( long l_argc, char **ppch_argv, opt_t *pst_argsDest )
+signed char argumentManagement ( long l_argc, char **ppch_argv, opt_t *pstr_argsDest )
 {
 	signed char c_retValue;
 	char ch_opt;
 
 	/* Initialisation */
 	c_retValue = 1;
-	pst_argsDest->pch_iface = NULL;
-	pst_argsDest->pch_askedHwAddr = NULL;
-	pst_argsDest->ul_count = 0;
+	pstr_argsDest->pch_iface = NULL;
+	pstr_argsDest->pch_askedHwAddr = NULL;
+	pstr_argsDest->ul_count = 0;
 	/* ************** */
 
 
 	/* Parsing options args */
-	while ( ( ch_opt = getopt( l_argc, ppch_argv, "I:c:vh" ) ) != -1 ) 
+	while ( ( ch_opt = getopt( l_argc, ppch_argv, "I:c:Vh" ) ) != -1 ) 
 	{
 		switch(ch_opt)
 		{
-			case 'I'	:	pst_argsDest->pch_iface = (unsigned char *)optarg;
+			case 'I'	:	pstr_argsDest->pch_iface = optarg;
 							break;
 
-			case 'c'	:	pst_argsDest->ul_count = ABS(atol(optarg)); /* < 0 were stupid */
-							if (pst_argsDest->ul_count == 0)
+			case 'c'	:	pstr_argsDest->ul_count = ABS(atol(optarg)); /* < 0 were stupid */
+							if (pstr_argsDest->ul_count == 0)
 								c_retValue = -1;
 							break;
 
-			case 'v'	:	fprintf(stdout, "%s\n", VERSION);
+			case 'V'	:	fprintf(stdout, "%s\n", VERSION);
 							exit(1);
 							break;
 			case 'h'	:
@@ -98,16 +98,16 @@ signed char argumentManagement ( long l_argc, char **ppch_argv, opt_t *pst_argsD
 	/* parsing non options args */
 	/* The only one must be the MAC Addr we'll request related IP */
 	if (optind < l_argc)
-		pst_argsDest->pch_askedHwAddr = (unsigned char *)ppch_argv[optind];
+		pstr_argsDest->pch_askedHwAddr = ppch_argv[optind];
 	else
 		c_retValue = -1;
 
 	/* Check if required infos had been given */
-	if ( (pst_argsDest->pch_iface == NULL) || (pst_argsDest->pch_askedHwAddr == NULL) )
+	if ( (pstr_argsDest->pch_iface == NULL) || (pstr_argsDest->pch_askedHwAddr == NULL) )
 		c_retValue = -1;
 	else
 	{
-		fprintf(stdout, "RARPING %s on %s\n", pst_argsDest->pch_askedHwAddr, pst_argsDest->pch_iface);
+		fprintf(stdout, "RARPING %s on %s\n", pstr_argsDest->pch_askedHwAddr, pstr_argsDest->pch_iface);
 	}
 
 	return c_retValue;
@@ -128,7 +128,7 @@ void usage ( void )
 }
 
 
-signed char performRequests ( const opt_t *pst_argsDest )
+signed char performRequests ( const opt_t *pstr_argsDest )
 {
 	long l_socket, l_nbProbes, l_receivedReplies;
 	signed char c_retValue;
@@ -148,9 +148,9 @@ signed char performRequests ( const opt_t *pst_argsDest )
 	}
 	else
 	{
-		if ( craftPacket(&str_packet, pst_argsDest->pch_iface, &str_device, pst_argsDest->pch_askedHwAddr, l_socket) == 0 )
+		if ( craftPacket(&str_packet, pstr_argsDest->pch_iface, &str_device, pstr_argsDest->pch_askedHwAddr, l_socket) == 0 )
 		{
-			while ( (++l_nbProbes <= pst_argsDest->ul_count) || (!(pst_argsDest->ul_count)) )/* infinite loop if no count specified */
+			while ( (++l_nbProbes <= pstr_argsDest->ul_count) || (!(pstr_argsDest->ul_count)) )/* infinite loop if no count specified */
 				if (sendProbe(l_socket, &str_packet, &str_device) != 1)
 				{
 					fprintf(stderr, "Can't send request #%ld\n", l_nbProbes);
@@ -186,7 +186,7 @@ signed char performRequests ( const opt_t *pst_argsDest )
 }
 
 
-signed char craftPacket ( etherPacket_t * pstr_packet, unsigned char * pch_ifaceName, struct sockaddr_ll * pstr_device, const unsigned char * pch_askedHwAddr, long l_socket )
+signed char craftPacket ( etherPacket_t * pstr_packet, char * pch_ifaceName, struct sockaddr_ll * pstr_device, const char * pch_askedHwAddr, long l_socket )
 {
 	signed char c_retValue;
 
@@ -201,20 +201,20 @@ signed char craftPacket ( etherPacket_t * pstr_packet, unsigned char * pch_iface
 	else
 	{
 		/* Craft Packet */
-		memset(pstr_packet->ucht_destHwAddr, 0xFF, 6);
-		memcpy(pstr_packet->ucht_senderHwAddr, pstr_device->sll_addr, 6);
+		memset(pstr_packet->uct_destHwAddr, 0xFF, 6);
+		memcpy(pstr_packet->uct_senderHwAddr, pstr_device->sll_addr, 6);
 		pstr_packet->us_ethType = htons(ETH_TYPE_RARP);
 		pstr_packet->str_packet.us_hwType = htons(HW_TYPE_ETHERNET);
 		pstr_packet->str_packet.us_protoType = htons(IP_PROTO);
 		pstr_packet->str_packet.uc_hwLen = 6; /* length of mac address in bytes */
 		pstr_packet->str_packet.uc_protoLen = 4; /* Were're in IPV4 here */
 		pstr_packet->str_packet.us_opcode = htons(RARP_OPCODE_REQUEST);
-		memcpy(pstr_packet->str_packet.cht_srcHwAddr, pstr_device->sll_addr, 6);
+		memcpy(pstr_packet->str_packet.uct_srcHwAddr, pstr_device->sll_addr, 6);
 		/* In a RARP request these fields are undefined */
-		bzero(pstr_packet->str_packet.cht_srcIpAddr, 4);
-		bzero(pstr_packet->str_packet.cht_targetIpAddr, 4);
+		bzero(pstr_packet->str_packet.uct_srcIpAddr, 4);
+		bzero(pstr_packet->str_packet.uct_targetIpAddr, 4);
 		/* --- -- --- -- --- -- --- -- --- -- --- -- -- */
-#define MAC_FIELD(a) (&(pstr_packet->str_packet.cht_targetHwAddr[(a)]))
+#define MAC_FIELD(a) (&(pstr_packet->str_packet.uct_targetHwAddr[(a)]))
 		if (sscanf(pch_askedHwAddr, "%02hhx:%02hhx:%02hhx:%02hhx:%02hhx:%02hhx", MAC_FIELD(0), MAC_FIELD(1), MAC_FIELD(2), MAC_FIELD(3), MAC_FIELD(4), MAC_FIELD(5)) != 6)
 		{
 			fprintf(stderr, "Unrecognised format %s for a MAC address\n", pch_askedHwAddr);
@@ -231,7 +231,7 @@ signed char craftPacket ( etherPacket_t * pstr_packet, unsigned char * pch_iface
 }
 
 
-char getLowLevelInfos ( struct sockaddr_ll * pstr_device, unsigned char * pch_ifaceName, long l_socket )
+char getLowLevelInfos ( struct sockaddr_ll * pstr_device, char * pch_ifaceName, long l_socket )
 {
 	signed char c_retValue;
 
@@ -259,9 +259,9 @@ char getLowLevelInfos ( struct sockaddr_ll * pstr_device, unsigned char * pch_if
 }
 
 
-char getLocalHardwareAddress ( long l_socket, unsigned char * pch_ifaceName, unsigned char * mac )
+char getLocalHardwareAddress ( long l_socket, char * pch_ifaceName, unsigned char * puc_mac )
 {
-	char c_retValue;
+	signed char c_retValue;
 	struct ifreq str_tmpIfr; /* described in man (7) netdevice */
 
 	c_retValue = 0;
@@ -277,14 +277,14 @@ char getLocalHardwareAddress ( long l_socket, unsigned char * pch_ifaceName, uns
 	}
 	else
 	{
-		memcpy(mac, str_tmpIfr.ifr_hwaddr.sa_data, 6); /* cpoy the local MAC address into mac buffer (into struct sockaddr_sll str_device in fact)*/
+		memcpy(puc_mac, str_tmpIfr.ifr_hwaddr.sa_data, 6); /* cpoy the local MAC address into mac buffer (into struct sockaddr_sll str_device in fact)*/
 	}
 
 	return c_retValue;
 }
 
 
-unsigned long getIfaceIndex ( unsigned char * pch_ifName, long l_socket )
+unsigned long getIfaceIndex ( char * pch_ifName, long l_socket )
 {
 	struct ifreq str_tmpIfr;
 
@@ -325,11 +325,11 @@ unsigned char getAnswer ( long l_socket, struct sockaddr_ll * pstr_device )
 	etherPacket_t str_reply; /* to store received datas */
 	struct in_addr str_replySrcIpAddr; /* to store the IP address of the sender of the replies */
 	/* strings to print out results in a clean way */
-	unsigned char tch_replySrcIp[IP_ADDR_SIZE+1], tch_replySrcHwAddr[MAC_ADDR_SIZE+1], tch_replyHwAddr[MAC_ADDR_SIZE+1], tch_replyAddrIp[IP_ADDR_SIZE+1];
-	unsigned char c_retValue;
+	char tch_replySrcIp[IP_ADDR_SIZE+1], tch_replySrcHwAddr[MAC_ADDR_SIZE+1], tch_replyHwAddr[MAC_ADDR_SIZE+1], tch_replyAddrIp[IP_ADDR_SIZE+1];
+	unsigned char uc_retValue;
 
 	/* usual initialisation */
-	c_retValue = 1;
+	uc_retValue = 1;
 	bzero(&str_reply, sizeof(etherPacket_t));
 	/* strings to print results out */
 	bzero(tch_replySrcIp, IP_ADDR_SIZE+1);
@@ -355,20 +355,20 @@ unsigned char getAnswer ( long l_socket, struct sockaddr_ll * pstr_device )
 	}
 	else
 	{
-		c_retValue = 0;
+		uc_retValue = 0;
 	}
 
-	return c_retValue;
+	return uc_retValue;
 }
 
 
-char parse ( etherPacket_t * pstr_reply, unsigned char * tch_replySrcIp, unsigned char * tch_replySrcHwAddr, unsigned char * tch_replyHwAddr, unsigned char * tch_replyAddrIp )
+char parse ( etherPacket_t * pstr_reply, char tch_replySrcIp[], char tch_replySrcHwAddr[], char tch_replyHwAddr[], char tch_replyAddrIp[] )
 {
 	struct in_addr str_tmpIpAddr;
 
 	/* Fill the string tch_srcIpAddr, that is the IP address of the reply sender with the address contained in received packet */
 	bzero(&str_tmpIpAddr, sizeof(struct in_addr));
-	memcpy(&str_tmpIpAddr, pstr_reply->str_packet.cht_srcIpAddr, 4);
+	memcpy(&str_tmpIpAddr, pstr_reply->str_packet.uct_srcIpAddr, 4);
 	strncpy(tch_replySrcIp, inet_ntoa(str_tmpIpAddr), IP_ADDR_SIZE);
 
 	/* 
@@ -376,18 +376,18 @@ char parse ( etherPacket_t * pstr_reply, unsigned char * tch_replySrcIp, unsigne
 	 * This is the "real" answer to the request sent
 	 */
 	bzero(&str_tmpIpAddr, sizeof(struct in_addr));
-	memcpy(&str_tmpIpAddr, pstr_reply->str_packet.cht_targetIpAddr, 4);
+	memcpy(&str_tmpIpAddr, pstr_reply->str_packet.uct_targetIpAddr, 4);
 	strncpy(tch_replyAddrIp, inet_ntoa(str_tmpIpAddr), IP_ADDR_SIZE); /* this is the answer */
 
 	/* 
 	 * Fill the string tch_replySrcHwAddr with formatted MAC address contained in received datas
 	 * This is the hardware address of the sender of the parsed reply
 	 */
-#define MAC(i) pstr_reply->str_packet.cht_srcHwAddr[(i)]
+#define MAC(i) pstr_reply->str_packet.uct_srcHwAddr[(i)]
 	snprintf(tch_replySrcHwAddr, MAC_ADDR_SIZE+1, "%02x:%02x:%02x:%02x:%02x:%02x", MAC(0), MAC(1), MAC(2), MAC(3), MAC(4), MAC(5));
 
 	/* The same way, but with Hardware Address of the host we requested about (this must be the same than the one specified by user)) */
-#define _MAC(i) pstr_reply->str_packet.cht_targetHwAddr[(i)]
+#define _MAC(i) pstr_reply->str_packet.uct_targetHwAddr[(i)]
 	snprintf(tch_replyHwAddr, MAC_ADDR_SIZE+1, "%02x:%02x:%02x:%02x:%02x:%02x", _MAC(0), _MAC(1), _MAC(2), _MAC(3), _MAC(4), _MAC(5));
 	/* --- -- --- -- --- */
 
