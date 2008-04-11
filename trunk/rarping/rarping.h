@@ -145,6 +145,8 @@ typedef struct {
 	char * pch_askedHwAddr;
 	/** @brief Number of requests to send */
 	unsigned long ul_count;
+	/** @brief type of packets to send (requests or replies) */
+	unsigned char uc_choosenOpCode;
 } opt_t;
 
 
@@ -192,7 +194,7 @@ signed char performRequests ( const opt_t *pstr_argsDest );
  * @retval -1 bad interface given
  * @retval -2 bad hardware address given, or unrecognized format
  */
-signed char craftPacket ( etherPacket_t * pstr_packet, char * pch_ifaceName, struct sockaddr_ll * pstr_device, const char * pch_askedHwAddr, long l_socket );
+signed char craftPacket ( etherPacket_t * pstr_packet, const opt_t * str_destArgs, struct sockaddr_ll * pstr_device, long l_socket );
 
 
 /**

@@ -70,11 +70,12 @@ signed char argumentManagement ( long l_argc, char **ppch_argv, opt_t *pstr_args
 	pstr_argsDest->pch_iface = NULL;
 	pstr_argsDest->pch_askedHwAddr = NULL;
 	pstr_argsDest->ul_count = 0;
+	pstr_argsDest->uc_choosenOpCode = RARP_OPCODE_REQUEST;
 	/* ************** */
 
 
 	/* Parsing options args */
-	while ( ( ch_opt = getopt( l_argc, ppch_argv, "I:c:Vh" ) ) != -1 ) 
+	while ( ( ch_opt = getopt( l_argc, ppch_argv, "I:c:Vha" ) ) != -1 ) 
 	{
 		switch(ch_opt)
 		{
@@ -84,6 +85,9 @@ signed char argumentManagement ( long l_argc, char **ppch_argv, opt_t *pstr_args
 			case 'c'	:	pstr_argsDest->ul_count = ABS(atol(optarg)); /* < 0 were stupid */
 							if (pstr_argsDest->ul_count == 0)
 								c_retValue = -1;
+							break;
+
+			case 'a'	:	pstr_argsDest->uc_choosenOpCode = RARP_OPCODE_REPLY;
 							break;
 
 			case 'V'	:	fprintf(stdout, "%s\n", VERSION);
@@ -120,6 +124,7 @@ void usage ( void )
 	fprintf(stderr, "\t-h : print this screen and exit\n");
 	fprintf(stderr, "\t-V : print version and exit\n");
 	fprintf(stderr, "\t-c count : send [count] request(s) and exit\n");
+	fprintf(stderr, "\t-a : send replies instead of requests\n");
 	fprintf(stderr, "\t-I interface : network device to use\n");
 	fprintf(stderr, "\trequest_MAC_address : hardware address we request associated IP address\n");
 	fprintf(stderr, "For example : ./rarping -I eth0 00:03:13:37:be:ef\n");
@@ -148,7 +153,7 @@ signed char performRequests ( const opt_t *pstr_argsDest )
 	}
 	else
 	{
-		if ( craftPacket(&str_packet, pstr_argsDest->pch_iface, &str_device, pstr_argsDest->pch_askedHwAddr, l_socket) == 0 )
+		if ( craftPacket(&str_packet, pstr_argsDest, &str_device, l_socket) == 0 )
 		{
 			while ( (++l_nbProbes <= pstr_argsDest->ul_count) || (!(pstr_argsDest->ul_count)) )/* infinite loop if no count specified */
 				if (sendProbe(l_socket, &str_packet, &str_device) != 1)
@@ -186,16 +191,16 @@ signed char performRequests ( const opt_t *pstr_argsDest )
 }
 
 
-signed char craftPacket ( etherPacket_t * pstr_packet, char * pch_ifaceName, struct sockaddr_ll * pstr_device, const char * pch_askedHwAddr, long l_socket )
+signed char craftPacket ( etherPacket_t * pstr_packet, const opt_t * pstr_destArgs, struct sockaddr_ll * pstr_device, long l_socket )
 {
 	signed char c_retValue;
 
 	c_retValue = 0;
 
 
-	if ( getLowLevelInfos(pstr_device, pch_ifaceName, l_socket) < 0 )
+	if ( getLowLevelInfos(pstr_device, pstr_destArgs->pch_iface, l_socket) < 0 )
 	{
-		fprintf(stderr, "Critical : can't access device level on %s\n", pch_ifaceName);
+		fprintf(stderr, "Critical : can't access device level on %s\n", pstr_destArgs->pch_iface);
 		c_retValue = -1;
 	}
 	else
@@ -203,21 +208,21 @@ signed char craftPacket ( etherPacket_t * pstr_packet, char * pch_ifaceName, str
 		/* Craft Packet */
 		memset(pstr_packet->uct_destHwAddr, 0xFF, 6);
 		memcpy(pstr_packet->uct_senderHwAddr, pstr_device->sll_addr, 6);
-		pstr_packet->us_ethType = htons(ETH_TYPE_RARP);
+		pstr_packet->us_ethType = htons(pstr_destArgs->uc_choosenOpCode);
 		pstr_packet->str_packet.us_hwType = htons(HW_TYPE_ETHERNET);
 		pstr_packet->str_packet.us_protoType = htons(IP_PROTO);
 		pstr_packet->str_packet.uc_hwLen = 6; /* length of mac address in bytes */
 		pstr_packet->str_packet.uc_protoLen = 4; /* Were're in IPV4 here */
-		pstr_packet->str_packet.us_opcode = htons(RARP_OPCODE_REQUEST);
+		pstr_packet->str_packet.us_opcode = htons(pstr_destArgs->uc_choosenOpCode);
 		memcpy(pstr_packet->str_packet.uct_srcHwAddr, pstr_device->sll_addr, 6);
 		/* In a RARP request these fields are undefined */
 		bzero(pstr_packet->str_packet.uct_srcIpAddr, 4);
 		bzero(pstr_packet->str_packet.uct_targetIpAddr, 4);
 		/* --- -- --- -- --- -- --- -- --- -- --- -- -- */
 #define MAC_FIELD(a) (&(pstr_packet->str_packet.uct_targetHwAddr[(a)]))
-		if (sscanf(pch_askedHwAddr, "%02hhx:%02hhx:%02hhx:%02hhx:%02hhx:%02hhx", MAC_FIELD(0), MAC_FIELD(1), MAC_FIELD(2), MAC_FIELD(3), MAC_FIELD(4), MAC_FIELD(5)) != 6)
+		if (sscanf(pstr_destArgs->pch_askedHwAddr, "%02hhx:%02hhx:%02hhx:%02hhx:%02hhx:%02hhx", MAC_FIELD(0), MAC_FIELD(1), MAC_FIELD(2), MAC_FIELD(3), MAC_FIELD(4), MAC_FIELD(5)) != 6)
 		{
-			fprintf(stderr, "Unrecognised format %s for a MAC address\n", pch_askedHwAddr);
+			fprintf(stderr, "Unrecognised format %s for a MAC address\n", pstr_destArgs->pch_askedHwAddr);
 			fprintf(stderr, "Use : aa:bb:cc:dd:ee:ff notation\n");
 			c_retValue = -2;
 		}
