@@ -208,7 +208,7 @@ signed char craftPacket ( etherPacket_t * pstr_packet, const opt_t * pstr_destAr
 		/* Craft Packet */
 		memset(pstr_packet->uct_destHwAddr, 0xFF, 6);
 		memcpy(pstr_packet->uct_senderHwAddr, pstr_device->sll_addr, 6);
-		pstr_packet->us_ethType = htons(pstr_destArgs->uc_choosenOpCode);
+		pstr_packet->us_ethType = htons(ETH_TYPE_RARP);
 		pstr_packet->str_packet.us_hwType = htons(HW_TYPE_ETHERNET);
 		pstr_packet->str_packet.us_protoType = htons(IP_PROTO);
 		pstr_packet->str_packet.uc_hwLen = 6; /* length of mac address in bytes */

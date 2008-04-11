@@ -16,7 +16,8 @@
 -- > OPTIONS
 [ ] Spoof MAC address
 [ ] Spoof IP
-[ ] send RARP replies instead of requests
+[X] send RARP replies instead of requests
+[ ] specify IP address in RARP replies
 [ ] exit after a reply
 [ ] interval between two probes
 
