@@ -4,10 +4,10 @@
  * @brief Rarping - send RARP REQUEST to a neighbour host
  * @see RFC 903
  *
- * $Author: Henri Doreau <henri.doreau@gmail.com> $
- * $Date: dimanche 6 avril 2008, 21:17:46 (UTC+0200) $
+ * $Author$
+ * $Date$ 
  *
- * $Revision: 10 $
+ * $Revision$
  */
 
 /* 
@@ -443,7 +443,7 @@ signed long openRawSocket ( struct timeval str_timeout )
 	l_sock = -1;
 
 	/* Try to open Raw socket */
-	if ((l_sock = socket(PF_PACKET, SOCK_RAW, htons(ETH_P_RARP))) < 0) /* ETH_P_ALL (or) ARP (or) RARP ??? */
+	if ((l_sock = socket(PF_PACKET, SOCK_RAW, htons(ETH_P_RARP))) < 0) /* ETH_P_ALL (or) RARP ??? */
 	{
 		perror("socket");
 		if (!IS_ROOT)
@@ -454,6 +454,9 @@ signed long openRawSocket ( struct timeval str_timeout )
 		/* set the socket send and receive timeout */
 		setsockopt(l_sock, SOL_SOCKET, SO_RCVTIMEO, (char*)&str_timeout, sizeof(str_timeout));
 		setsockopt(l_sock, SOL_SOCKET, SO_SNDTIMEO, (char*)&str_timeout, sizeof(str_timeout));
+#ifdef DEBUG
+		fprintf(stderr, "Timeout set to %lu ms\n", str_timeout.tv_sec*1000+str_timeout.tv_usec/1000);
+#endif
 	}
 
 	return l_sock;

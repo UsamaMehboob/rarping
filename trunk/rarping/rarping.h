@@ -3,10 +3,10 @@
  *
  * @brief Rarping - send RARP REQUEST to a neighbour host
  *
- * $Author: Henri DOREAU <henri.doreaugmail.com>$
- * $Date: dimanche 6 avril 2008, 21:17:00 (UTC+0200) $
+ * $Author$
+ * $Date$
  *
- * $Revision: 10$
+ * $Revision$
  */
 
 /* 
