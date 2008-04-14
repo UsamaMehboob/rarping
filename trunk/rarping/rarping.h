@@ -35,6 +35,7 @@
 #include <stdlib.h> /* malloc() */
 #include <string.h> /* strncpy(), memcpy() ... */
 #include <unistd.h> /* getopt() : command line parsing */
+#include <sys/time.h> /* struc timeval : used to set timeout*/
 #include <errno.h>
 #include <sys/socket.h> /* Network */
 #include <netinet/in.h> /* inet_ntoa */
@@ -54,7 +55,7 @@
 #define VERSION "rarping 0.1 alpha"
 
 /*
- * Macors
+ * Macros
  */
 
 /** @def IS_ROOT
@@ -95,6 +96,12 @@
  * max length of a MAC address in standard notation */
 #define MAC_ADDR_SIZE 17
 
+/** @def S_TIMEOUT
+ * number of seconds to spend when trying to send/recv */
+#define S_TIMEOUT_DEFAULT 1
+/** @def US_TIMEOUT
+ * number of microseconds to spend when trying to send/recv */
+#define US_TIMEOUT_DEFAULT 0
 
 /*
  * Typedef
@@ -147,6 +154,8 @@ typedef struct {
 	unsigned long ul_count;
 	/** @brief type of packets to send (requests or replies) */
 	unsigned char uc_choosenOpCode;
+	/** @brief timeout on send/recv */
+	struct timeval str_timeout;
 } opt_t;
 
 
@@ -156,6 +165,15 @@ typedef struct {
  * @brief Usage() prints out some help to craft a correct command line
  */
 void usage ( void );
+
+
+/**
+ * @brief set the send/recv timeout from command line to integers
+ * @param pstr_timeout vdestination of parsed argument
+ * @param pch_arg timeout, as string, given by user through command line
+ * @return none
+ */
+void parseTimeout ( struct timeval * pstr_timeout, char * pch_arg );
 
 
 /**
@@ -262,6 +280,39 @@ unsigned char getAnswer ( long l_socket, struct sockaddr_ll * pstr_device );
  * @retval 0 the function ends normally
  */
 char parse ( etherPacket_t * pstr_reply, char tch_replySrcIp[], char tch_replySrcHwAddr[], char tch_replyHwAddr[], char tch_replyAddrIp[] );
+
+
+/**
+ * @brief print out a summary of what happened
+ * @param ul_sentPackets number of sent packets
+ * @param ul_receivedPackets number of received packets
+ * @return  Error code according to the execution of the function
+ * @retval 0 the function ends normally
+ * @retval -1 not any packet were sent
+ */
+signed char footer ( unsigned long ul_sentPackets, unsigned long ul_receivedPackets );
+
+
+/**
+ * @brief open a raw socket and set timeout on sending and reception
+ * @param none
+ * @return return code of socket() : > is the socket we want, < 0 if an error ocured
+ */
+signed long openRawSocket ( struct timeval str_timeout );
+
+
+/**
+ * @brief sending loop : send packets as many times as wanted
+ * @param pul_nbProbes points to the number of requests correctly sent
+ * @param pul_receivedReplies points to the number of received replies
+ * @param pstr_argsDest points to the structure which contains user inputs
+ * @param pstr_packet points to the packet to send
+ * @param sockaddr_ll low level information to send datas without encapsulation
+ * @param l_socket Raw socket opened before
+ * @return Error code according to the execution of the function
+ * @retval 0 the function ends normally
+ */
+signed char loop( unsigned long * pul_nbProbes, unsigned long * pul_receivedReplies, const opt_t * pstr_argsDest, etherPacket_t * pstr_packet, struct sockaddr_ll * pstr_device, long l_socket );
 
 /* --- -- --- -- --- -- --- -- --- -- --- -- --- */
 

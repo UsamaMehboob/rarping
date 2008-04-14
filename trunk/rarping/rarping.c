@@ -71,28 +71,39 @@ signed char argumentManagement ( long l_argc, char **ppch_argv, opt_t *pstr_args
 	pstr_argsDest->pch_askedHwAddr = NULL;
 	pstr_argsDest->ul_count = 0;
 	pstr_argsDest->uc_choosenOpCode = RARP_OPCODE_REQUEST;
+	pstr_argsDest->str_timeout.tv_sec = S_TIMEOUT_DEFAULT;
+	pstr_argsDest->str_timeout.tv_usec = US_TIMEOUT_DEFAULT;
 	/* ************** */
 
 
 	/* Parsing options args */
-	while ( ( ch_opt = getopt( l_argc, ppch_argv, "I:c:Vha" ) ) != -1 ) 
+	while ( ( ch_opt = getopt( l_argc, ppch_argv, "I:c:t:Vha" ) ) != -1 ) 
 	{
 		switch(ch_opt)
 		{
+			/* Interface to use */
 			case 'I'	:	pstr_argsDest->pch_iface = optarg;
 							break;
 
+			/* number of packets to send (infinite if nothing specified */
 			case 'c'	:	pstr_argsDest->ul_count = ABS(atol(optarg)); /* < 0 were stupid */
 							if (pstr_argsDest->ul_count == 0)
 								c_retValue = -1;
 							break;
 
+			/* Send RARP replies instead of requests */
 			case 'a'	:	pstr_argsDest->uc_choosenOpCode = RARP_OPCODE_REPLY;
 							break;
 
+			/* set timeout */
+			case 't'	:	parseTimeout(&(pstr_argsDest->str_timeout), optarg);
+							break;
+
+			/* print version and exit */
 			case 'V'	:	fprintf(stdout, "%s\n", VERSION);
 							exit(1);
 							break;
+			/* print out a short help mesage */
 			case 'h'	:
 			case '?'	:
 			default		:	c_retValue = -1;
@@ -125,6 +136,7 @@ void usage ( void )
 	fprintf(stderr, "\t-V : print version and exit\n");
 	fprintf(stderr, "\t-c count : send [count] request(s) and exit\n");
 	fprintf(stderr, "\t-a : send replies instead of requests\n");
+	fprintf(stderr, "\t-t timeout : set the send/recv timeout value to [timeout] milliseconds (default 1000)\n");
 	fprintf(stderr, "\t-I interface : network device to use\n");
 	fprintf(stderr, "\trequest_MAC_address : hardware address we request associated IP address\n");
 	fprintf(stderr, "For example : ./rarping -I eth0 00:03:13:37:be:ef\n");
@@ -133,60 +145,63 @@ void usage ( void )
 }
 
 
+void parseTimeout ( struct timeval * pstr_timeout, char * pch_arg )
+{
+	unsigned long ul_tmpTimeout;
+
+	if ( sscanf(pch_arg, "%lu", &ul_tmpTimeout) != 1 )
+	{
+		fprintf(stderr, "Unrecognized format %s for a timeout : must be a positive ineger (in milliseconds)\n", pch_arg);
+		fprintf(stderr, "using default : 1000 milliseconds\n");
+		pstr_timeout->tv_sec = S_TIMEOUT_DEFAULT;
+		pstr_timeout->tv_usec = US_TIMEOUT_DEFAULT;
+	}
+	else
+	{
+		/* User specified timeout is in milliseconds and the timeval struct deals with seconds and micro-seconds */
+		pstr_timeout->tv_sec = ul_tmpTimeout/1000; /* destructive division */
+		pstr_timeout->tv_usec = (ul_tmpTimeout%(1000)) * 1000;
+	}
+
+	return;
+}
+
+
 signed char performRequests ( const opt_t *pstr_argsDest )
 {
-	long l_socket, l_nbProbes, l_receivedReplies;
+	long l_socket;
+	unsigned long ul_nbProbes, ul_receivedReplies;
 	signed char c_retValue;
 	etherPacket_t str_packet;
 	struct sockaddr_ll str_device; /* device independant physical layer address */
 
 	c_retValue = 0;
-	l_nbProbes = 0;
-	l_receivedReplies = 0;
-
-	if ((l_socket = socket(PF_PACKET, SOCK_RAW, htons(ETH_P_ALL))) < 0) /* opening socket */
+	ul_nbProbes = 0;
+	ul_receivedReplies = 0;
+	/* --- */
+	if ( ( l_socket = openRawSocket(pstr_argsDest->str_timeout) ) < 0)
 	{
-		perror("socket");
-		if (!IS_ROOT)
-			fprintf(stderr, "Are you root?\n");
 		c_retValue = -1;
 	}
 	else
 	{
+		/* if packet can be correctly crafted... */
 		if ( craftPacket(&str_packet, pstr_argsDest, &str_device, l_socket) == 0 )
 		{
-			while ( (++l_nbProbes <= pstr_argsDest->ul_count) || (!(pstr_argsDest->ul_count)) )/* infinite loop if no count specified */
-				if (sendProbe(l_socket, &str_packet, &str_device) != 1)
-				{
-					fprintf(stderr, "Can't send request #%ld\n", l_nbProbes);
-				}
-				else
-				{
-#ifdef DEBUG
-					fprintf(stderr, "Request #%ld sent\n", l_nbProbes);
-#endif
-					/* getAnswer function returns the number of replies received */
-					l_receivedReplies += getAnswer(l_socket, &str_device); /* wait for an answer and parse it */
-				}
+			/* Sending/Receiving Loop */
+			loop(&ul_nbProbes, &ul_receivedReplies, pstr_argsDest, &str_packet, &str_device, l_socket);
 		}
 		else
 		{
 			fprintf(stderr, "Can't craft packets\n");
 			c_retValue = -2;
 		}
-		/* Print out results if at least one request sent */
-		if (l_nbProbes > 0)
-		{
-			fprintf(stdout, "Sent %ld request(s)\n", l_nbProbes-1);
-			fprintf(stdout, "Received %ld response(s)\n", l_receivedReplies);
-		}
-		else
-		{
-			/* nothing to do */
-		}
+		/* This code will be executed whatever happens, after socket has been (correctly) opened */
+		footer(ul_nbProbes, ul_receivedReplies);
 		close(l_socket);
 	}
 
+	/* This code will be executed every time */
 	return c_retValue;
 }
 
@@ -344,7 +359,7 @@ unsigned char getAnswer ( long l_socket, struct sockaddr_ll * pstr_device )
 	/* --- -- --- -- --- -- --- -- */
 	
 #ifdef DEBUG
-	fprintf(stderr,"Waiting for an reply...\n");
+	fprintf(stderr,"Waiting for a reply...\n");
 #endif
 
 	/* Reception */
@@ -397,5 +412,76 @@ char parse ( etherPacket_t * pstr_reply, char tch_replySrcIp[], char tch_replySr
 	/* --- -- --- -- --- */
 
 	return 0;
+}
+
+
+signed char footer ( unsigned long ul_sentPackets, unsigned long ul_receivedPackets )
+{
+	signed char c_retValue;
+
+	c_retValue = 0;
+
+	/* Print out results if at least one request sent */
+	if (ul_sentPackets > 0)
+	{
+		fprintf(stdout, "Sent %ld request(s)\n", ul_sentPackets-1);
+		fprintf(stdout, "Received %ld response(s)\n", ul_receivedPackets);
+	}
+	else
+	{
+		c_retValue = -1;
+	}
+
+	return c_retValue;
+}
+
+
+signed long openRawSocket ( struct timeval str_timeout )
+{
+	signed long l_sock;
+
+	l_sock = -1;
+
+	/* Try to open Raw socket */
+	if ((l_sock = socket(PF_PACKET, SOCK_RAW, htons(ETH_P_RARP))) < 0) /* ETH_P_ALL (or) ARP (or) RARP ??? */
+	{
+		perror("socket");
+		if (!IS_ROOT)
+			fprintf(stderr, "Are you root?\n");
+	}		
+	else
+	{
+		/* set the socket send and receive timeout */
+		setsockopt(l_sock, SOL_SOCKET, SO_RCVTIMEO, (char*)&str_timeout, sizeof(str_timeout));
+		setsockopt(l_sock, SOL_SOCKET, SO_SNDTIMEO, (char*)&str_timeout, sizeof(str_timeout));
+	}
+
+	return l_sock;
+}
+
+
+signed char loop( unsigned long * pul_nbProbes, unsigned long * pul_receivedReplies, const opt_t * pstr_argsDest, etherPacket_t * pstr_packet, struct sockaddr_ll * pstr_device, long l_socket )
+{
+	signed char c_retValue;
+
+	c_retValue = 0;
+	/* --- */
+	while ( (++(*pul_nbProbes) <= pstr_argsDest->ul_count) || (!(pstr_argsDest->ul_count)) )/* infinite loop if no count specified */
+	{
+		if (sendProbe(l_socket, pstr_packet, pstr_device) != 1)
+		{
+			fprintf(stderr, "Can't send request #%ld\n", *pul_nbProbes);
+		}
+		else
+		{
+#ifdef DEBUG
+			fprintf(stderr, "Request #%ld sent\n", *pul_nbProbes);
+#endif
+			/* the getAnswer function returns the number of replies received for each request (boolean value) */
+			*pul_receivedReplies += getAnswer(l_socket, pstr_device); /* wait for an answer and parse it */
+		}
+	}
+
+	return c_retValue;
 }
 
