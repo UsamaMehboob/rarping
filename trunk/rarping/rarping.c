@@ -120,7 +120,7 @@ signed char argumentManagement ( long l_argc, char **ppch_argv, opt_t *pstr_args
 		c_retValue = ERR_ARG_PARSING;
 
 	/* Check if required infos had been given */
-	if ( (pstr_argsDest->pch_iface == NULL) || (pstr_argsDest->pch_askedHwAddr == NULL) || (pstr_argsDest->pch_IpAddrRarpReplies == NULL) )
+	if ( (pstr_argsDest->pch_iface == NULL) || (pstr_argsDest->pch_askedHwAddr == NULL) )
 		c_retValue = ERR_ARG_PARSING;
 	else
 	{
