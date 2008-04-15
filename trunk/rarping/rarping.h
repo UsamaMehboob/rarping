@@ -69,6 +69,11 @@
 /*
  * Const
  */
+
+/** @def ERR_ARG_PARSING
+ * returned value if argument parsing fails */
+#define ERR_ARG_PARSING -1
+
 /* ethertype for the rarp protocol */
 #ifndef ETH_TYPE_RARP
 /** @def ETH_TYPE_RARP
@@ -150,6 +155,8 @@ typedef struct {
 	char * pch_iface;
 	/** @brief Subject of the request(s) */
 	char * pch_askedHwAddr;
+	/** @brief if RARP replies are sent, this is the answer */
+	char * pch_IpAddrRarpReplies;
 	/** @brief Number of requests to send */
 	unsigned long ul_count;
 	/** @brief type of packets to send (requests or replies) */
@@ -224,7 +231,7 @@ signed char craftPacket ( etherPacket_t * pstr_packet, const opt_t * str_destArg
  * @retval 0 the function ends normally
  * @retval -1 if function can't provide low level infos
  */
-char getLowLevelInfos ( struct sockaddr_ll * pstr_device, char * pch_ifaceName, long l_socket );
+signed char getLowLevelInfos ( struct sockaddr_ll * pstr_device, char * pch_ifaceName, long l_socket );
 
 
 /**
@@ -236,7 +243,7 @@ char getLowLevelInfos ( struct sockaddr_ll * pstr_device, char * pch_ifaceName, 
  * @retval 0 the function ends normally
  * @retval -1 can't find MAC address
  */
-char getLocalHardwareAddress ( long l_socket, char * pch_ifaceName, unsigned char * puc_mac );
+signed char getLocalHardwareAddress ( long l_socket, char * pch_ifaceName, unsigned char * puc_mac );
 
 
 /**
@@ -279,7 +286,7 @@ unsigned char getAnswer ( long l_socket, struct sockaddr_ll * pstr_device );
  * @return Error code according to the execution of the function
  * @retval 0 the function ends normally
  */
-char parse ( etherPacket_t * pstr_reply, char tch_replySrcIp[], char tch_replySrcHwAddr[], char tch_replyHwAddr[], char tch_replyAddrIp[] );
+signed char parse ( etherPacket_t * pstr_reply, char tch_replySrcIp[], char tch_replySrcHwAddr[], char tch_replyHwAddr[], char tch_replyAddrIp[] );
 
 
 /**
@@ -313,6 +320,16 @@ signed long openRawSocket ( struct timeval str_timeout );
  * @retval 0 the function ends normally
  */
 signed char loop( unsigned long * pul_nbProbes, unsigned long * pul_receivedReplies, const opt_t * pstr_argsDest, etherPacket_t * pstr_packet, struct sockaddr_ll * pstr_device, long l_socket );
+
+
+/**
+ * @brief fills target protocol address in sent packets according to user choices (option -a)
+ * @param puc_targetIpAddress target protocol address field in crafted packet
+ * @param pstr_argsDest choosen user's inputs
+ * @return Error code according to the execution of the function
+ * @retval 0 the function ends normally
+ */
+signed char setTargetIpAddress ( unsigned char * puc_targetIpAddress, const opt_t * pstr_argsDest );
 
 /* --- -- --- -- --- -- --- -- --- -- --- -- --- */
 

@@ -69,6 +69,7 @@ signed char argumentManagement ( long l_argc, char **ppch_argv, opt_t *pstr_args
 	c_retValue = 1;
 	pstr_argsDest->pch_iface = NULL;
 	pstr_argsDest->pch_askedHwAddr = NULL;
+	pstr_argsDest->pch_IpAddrRarpReplies = NULL;
 	pstr_argsDest->ul_count = 0;
 	pstr_argsDest->uc_choosenOpCode = RARP_OPCODE_REQUEST;
 	pstr_argsDest->str_timeout.tv_sec = S_TIMEOUT_DEFAULT;
@@ -77,7 +78,7 @@ signed char argumentManagement ( long l_argc, char **ppch_argv, opt_t *pstr_args
 
 
 	/* Parsing options args */
-	while ( ( ch_opt = getopt( l_argc, ppch_argv, "I:c:t:Vha" ) ) != -1 ) 
+	while ( ( ch_opt = getopt( l_argc, ppch_argv, "I:c:t:a:Vh" ) ) != -1 ) 
 	{
 		switch(ch_opt)
 		{
@@ -88,11 +89,12 @@ signed char argumentManagement ( long l_argc, char **ppch_argv, opt_t *pstr_args
 			/* number of packets to send (infinite if nothing specified */
 			case 'c'	:	pstr_argsDest->ul_count = ABS(atol(optarg)); /* < 0 were stupid */
 							if (pstr_argsDest->ul_count == 0)
-								c_retValue = -1;
+								c_retValue = ERR_ARG_PARSING;
 							break;
 
 			/* Send RARP replies instead of requests */
 			case 'a'	:	pstr_argsDest->uc_choosenOpCode = RARP_OPCODE_REPLY;
+							pstr_argsDest->pch_IpAddrRarpReplies = optarg;/* content of the reply (IP address) */
 							break;
 
 			/* set timeout */
@@ -106,7 +108,7 @@ signed char argumentManagement ( long l_argc, char **ppch_argv, opt_t *pstr_args
 			/* print out a short help mesage */
 			case 'h'	:
 			case '?'	:
-			default		:	c_retValue = -1;
+			default		:	c_retValue = ERR_ARG_PARSING;
 		}
 	}
 	
@@ -115,11 +117,11 @@ signed char argumentManagement ( long l_argc, char **ppch_argv, opt_t *pstr_args
 	if (optind < l_argc)
 		pstr_argsDest->pch_askedHwAddr = ppch_argv[optind];
 	else
-		c_retValue = -1;
+		c_retValue = ERR_ARG_PARSING;
 
 	/* Check if required infos had been given */
-	if ( (pstr_argsDest->pch_iface == NULL) || (pstr_argsDest->pch_askedHwAddr == NULL) )
-		c_retValue = -1;
+	if ( (pstr_argsDest->pch_iface == NULL) || (pstr_argsDest->pch_askedHwAddr == NULL) || (pstr_argsDest->pch_IpAddrRarpReplies == NULL) )
+		c_retValue = ERR_ARG_PARSING;
 	else
 	{
 		fprintf(stdout, "RARPING %s on %s\n", pstr_argsDest->pch_askedHwAddr, pstr_argsDest->pch_iface);
@@ -131,11 +133,11 @@ signed char argumentManagement ( long l_argc, char **ppch_argv, opt_t *pstr_args
 
 void usage ( void )
 {
-	fprintf(stderr, "Usage : ./rarping [-h] [-c count] [-I interface] request_MAC_address\n");
+	fprintf(stderr, "Usage : ./rarping [-h] [-c count] [-a IP address] [-I interface] request_MAC_address\n");
 	fprintf(stderr, "\t-h : print this screen and exit\n");
 	fprintf(stderr, "\t-V : print version and exit\n");
 	fprintf(stderr, "\t-c count : send [count] request(s) and exit\n");
-	fprintf(stderr, "\t-a : send replies instead of requests\n");
+	fprintf(stderr, "\t-a [IP address] : send replies instead of requests, [IP address] is the content of the reply\n");
 	fprintf(stderr, "\t-t timeout : set the send/recv timeout value to [timeout] milliseconds (default 1000)\n");
 	fprintf(stderr, "\t-I interface : network device to use\n");
 	fprintf(stderr, "\trequest_MAC_address : hardware address we request associated IP address\n");
@@ -232,7 +234,8 @@ signed char craftPacket ( etherPacket_t * pstr_packet, const opt_t * pstr_destAr
 		memcpy(pstr_packet->str_packet.uct_srcHwAddr, pstr_device->sll_addr, 6);
 		/* In a RARP request these fields are undefined */
 		bzero(pstr_packet->str_packet.uct_srcIpAddr, 4);
-		bzero(pstr_packet->str_packet.uct_targetIpAddr, 4);
+		/* set this field o 0 for a request, wanted IP address for a reply */
+		setTargetIpAddress(pstr_packet->str_packet.uct_targetIpAddr, pstr_destArgs);
 		/* --- -- --- -- --- -- --- -- --- -- --- -- -- */
 #define MAC_FIELD(a) (&(pstr_packet->str_packet.uct_targetHwAddr[(a)]))
 		if (sscanf(pstr_destArgs->pch_askedHwAddr, "%02hhx:%02hhx:%02hhx:%02hhx:%02hhx:%02hhx", MAC_FIELD(0), MAC_FIELD(1), MAC_FIELD(2), MAC_FIELD(3), MAC_FIELD(4), MAC_FIELD(5)) != 6)
@@ -251,7 +254,7 @@ signed char craftPacket ( etherPacket_t * pstr_packet, const opt_t * pstr_destAr
 }
 
 
-char getLowLevelInfos ( struct sockaddr_ll * pstr_device, char * pch_ifaceName, long l_socket )
+signed char getLowLevelInfos ( struct sockaddr_ll * pstr_device, char * pch_ifaceName, long l_socket )
 {
 	signed char c_retValue;
 
@@ -279,7 +282,7 @@ char getLowLevelInfos ( struct sockaddr_ll * pstr_device, char * pch_ifaceName, 
 }
 
 
-char getLocalHardwareAddress ( long l_socket, char * pch_ifaceName, unsigned char * puc_mac )
+signed char getLocalHardwareAddress ( long l_socket, char * pch_ifaceName, unsigned char * puc_mac )
 {
 	signed char c_retValue;
 	struct ifreq str_tmpIfr; /* described in man (7) netdevice */
@@ -382,7 +385,7 @@ unsigned char getAnswer ( long l_socket, struct sockaddr_ll * pstr_device )
 }
 
 
-char parse ( etherPacket_t * pstr_reply, char tch_replySrcIp[], char tch_replySrcHwAddr[], char tch_replyHwAddr[], char tch_replyAddrIp[] )
+signed char parse ( etherPacket_t * pstr_reply, char tch_replySrcIp[], char tch_replySrcHwAddr[], char tch_replyHwAddr[], char tch_replyAddrIp[] )
 {
 	struct in_addr str_tmpIpAddr;
 
@@ -482,6 +485,39 @@ signed char loop( unsigned long * pul_nbProbes, unsigned long * pul_receivedRepl
 #endif
 			/* the getAnswer function returns the number of replies received for each request (boolean value) */
 			*pul_receivedReplies += getAnswer(l_socket, pstr_device); /* wait for an answer and parse it */
+		}
+	}
+
+	return c_retValue;
+}
+
+
+signed char setTargetIpAddress ( unsigned char * puc_targetIpAddress, const opt_t * pstr_argsDest )
+{
+	signed char c_retValue;
+	/* struct in_addr just contains an unsigned long int */
+	struct in_addr str_tmpAddr;
+
+	c_retValue = 0;
+
+	/* if RARP requests are choosen... */
+	if ( pstr_argsDest->pch_IpAddrRarpReplies == NULL )
+	{
+		/* ... the field is set to 0 */
+		bzero(puc_targetIpAddress, 4);
+	}
+	else
+	{
+		/* inet_ntoa fills a given in_addr structure (using network byte order) with supplied IP address */
+		if ( inet_aton(pstr_argsDest->pch_IpAddrRarpReplies, &str_tmpAddr) == 0 )
+		{
+			fprintf(stderr, "Invalid IP address : %s\nUsing default 0.0.0.0\n", pstr_argsDest->pch_IpAddrRarpReplies);
+			bzero(puc_targetIpAddress, 4);
+		}
+		else
+		{
+			/* copy the processed IP address into the packet we'll send */
+			memcpy(puc_targetIpAddress, &str_tmpAddr, sizeof(struct in_addr));
 		}
 	}
 
