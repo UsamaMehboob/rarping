@@ -17,16 +17,32 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #
+CC=gcc
+CFLAGS= -pedantic
 
-all: _rarping
+EXEC=rarping
 
-_rarping: rarping.c rarping.h rarping
-	gcc -o rarping rarping.c -pedantic
+OBJECTS= rarping.o
 
-debug: rarping.c rarping.h rarping
-	gcc -g -o rarping rarping.c -DDEBUG -pedantic
+$(EXEC): $(EXEC).c
+
+
+all: $(EXEC)
+
+rarping: $(OBJECTS)
+	$(CC) -o $@ $^
+
+%.o: %.c %h
+	$(CC) -o $@ -c $< $(CFLAGS)
+
+debug: $(OBJECTS)
+	$(CC) -o $@ $^ -DDEBUG
+
 
 clean:
-	rm -f rarping
-	rm -f *.o
+	rm -f $(OBJECTS) $(PRG)
+
+distclean: clean
+	rm -f *~ \#*
+
 
