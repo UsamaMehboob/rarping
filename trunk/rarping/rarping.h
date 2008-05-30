@@ -54,6 +54,10 @@
  * Software Version */
 #define VERSION "rarping 0.1 alpha"
 
+#define BOOL char
+#define FALSE 0
+#define TRUE (!FALSE)
+
 /*
  * Macros
  */
@@ -166,7 +170,6 @@ typedef struct {
 } opt_t;
 
 
-
 /* --- -- --- Functions prototypes --- -- --- */
 /**
  * @brief Usage() prints out some help to craft a correct command line
@@ -195,6 +198,7 @@ void parseTimeout ( struct timeval * pstr_timeout, char * pch_arg );
  */
 signed char argumentManagement ( long l_argc, char **ppch_argv, opt_t *pstr_argsDest );
 
+void initOptionsDefault ( opt_t * pstr_args );
 
 /**
  * @brief perform RARP requests the way defined by user
@@ -271,9 +275,10 @@ signed char sendProbe ( long l_socket, etherPacket_t * pstr_packet, struct socka
  * @brief wait for an answer and, if receive any, parse it
  * @param l_socket is the raw socket opened before
  * @param pstr_device low level informations to receive datas without any encapsulation
+ * @param pstr_timing used to chronometer an dprint out how fast the received replies are
  * @return the number of replies received
  */
-unsigned char getAnswer ( long l_socket, struct sockaddr_ll * pstr_device );
+unsigned char getAnswer ( long l_socket, struct sockaddr_ll * pstr_device, struct timeval * pstr_timing );
 
 
 /**
@@ -331,6 +336,12 @@ signed char loop( unsigned long * pul_nbProbes, unsigned long * pul_receivedRepl
  */
 signed char setTargetIpAddress ( unsigned char * puc_targetIpAddress, const opt_t * pstr_argsDest );
 
+
+signed char chronometer ( struct timeval * pstr_wantedTimeval );
+
+signed char chronometerInit ( struct timeval * pstr_wantedTimeval );
+
+void printTime ( const struct timeval str_time );
 /* --- -- --- -- --- -- --- -- --- -- --- -- --- */
 
 

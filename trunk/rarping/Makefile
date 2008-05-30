@@ -1,7 +1,7 @@
 #
-#	MAKEFILE rarping
+#       MAKEFILE rarping
 #
-#	Autheur : Henri Doreau <henri.doreau@gmail.com>
+#       Autheur : Henri Doreau <henri.doreau@gmail.com>
  
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -17,32 +17,16 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #
-CC=gcc
-CFLAGS= -pedantic
 
-EXEC=rarping
+all: _rarping
 
-OBJECTS= rarping.o
+_rarping: rarping.c rarping.h rarping
+	gcc -o rarping rarping.c -pedantic
 
-$(EXEC): $(EXEC).c
-
-
-all: $(EXEC)
-
-rarping: $(OBJECTS)
-	$(CC) -o $@ $^
-
-%.o: %.c %h
-	$(CC) -o $@ -c $< $(CFLAGS)
-
-debug: $(OBJECTS)
-	$(CC) -o $@ $^ -DDEBUG
-
+debug: rarping.c rarping.h rarping
+	gcc -g -o rarping rarping.c -DDEBUG -pedantic
 
 clean:
-	rm -f $(OBJECTS) $(PRG)
+	rm -f rarping *.o \#* *~
 
 distclean: clean
-	rm -f *~ \#*
-
-

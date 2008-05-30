@@ -67,13 +67,7 @@ signed char argumentManagement ( long l_argc, char **ppch_argv, opt_t *pstr_args
 
 	/* Initialisation */
 	c_retValue = 1;
-	pstr_argsDest->pch_iface = NULL;
-	pstr_argsDest->pch_askedHwAddr = NULL;
-	pstr_argsDest->pch_IpAddrRarpReplies = NULL;
-	pstr_argsDest->ul_count = 0;
-	pstr_argsDest->uc_choosenOpCode = RARP_OPCODE_REQUEST;
-	pstr_argsDest->str_timeout.tv_sec = S_TIMEOUT_DEFAULT;
-	pstr_argsDest->str_timeout.tv_usec = US_TIMEOUT_DEFAULT;
+	initOptionsDefault(pstr_argsDest);
 	/* ************** */
 
 
@@ -130,6 +124,19 @@ signed char argumentManagement ( long l_argc, char **ppch_argv, opt_t *pstr_args
 	return c_retValue;
 }
 
+
+void initOptionsDefault ( opt_t * pstr_args )
+{
+	pstr_args->pch_iface = NULL;
+	pstr_args->pch_askedHwAddr = NULL;
+	pstr_args->pch_IpAddrRarpReplies = NULL;
+	pstr_args->ul_count = 0;
+	pstr_args->uc_choosenOpCode = RARP_OPCODE_REQUEST;
+	pstr_args->str_timeout.tv_sec = S_TIMEOUT_DEFAULT;
+	pstr_args->str_timeout.tv_usec = US_TIMEOUT_DEFAULT;
+
+	return;
+}
 
 void usage ( void )
 {
@@ -343,7 +350,7 @@ signed char sendProbe ( long l_socket, etherPacket_t * pstr_packet, struct socka
 }
 
 
-unsigned char getAnswer ( long l_socket, struct sockaddr_ll * pstr_device )
+unsigned char getAnswer ( long l_socket, struct sockaddr_ll * pstr_device, struct timeval * pstr_timing )
 {
 	etherPacket_t str_reply; /* to store received datas */
 	struct in_addr str_replySrcIpAddr; /* to store the IP address of the sender of the replies */
@@ -371,9 +378,12 @@ unsigned char getAnswer ( long l_socket, struct sockaddr_ll * pstr_device )
 		/* If received packet is a RARP reply */
 		if ( (str_reply.us_ethType == htons(ETH_TYPE_RARP)) && (str_reply.str_packet.us_opcode == htons(RARP_OPCODE_REPLY)) )
 		{
+			chronometer(pstr_timing);
 			/* we craft strings to print results using received packet */
 			parse(&str_reply, tch_replySrcIp, tch_replySrcHwAddr, tch_replyHwAddr, tch_replyAddrIp);
-			fprintf(stdout, "Reply received from %s (%s) : %s has %s\n", tch_replySrcIp, tch_replySrcHwAddr, tch_replyHwAddr, tch_replyAddrIp);
+			fprintf(stdout, "Reply received from %s (%s) : %s has %s ", tch_replySrcIp, tch_replySrcHwAddr, tch_replyHwAddr, tch_replyAddrIp);
+			printTime(*pstr_timing);
+			fprintf(stdout, "\n");
 		}
 	}
 	else
@@ -469,6 +479,7 @@ signed long openRawSocket ( struct timeval str_timeout )
 signed char loop( unsigned long * pul_nbProbes, unsigned long * pul_receivedReplies, const opt_t * pstr_argsDest, etherPacket_t * pstr_packet, struct sockaddr_ll * pstr_device, long l_socket )
 {
 	signed char c_retValue;
+	struct timeval str_timing;
 
 	c_retValue = 0;
 	/* --- */
@@ -480,11 +491,12 @@ signed char loop( unsigned long * pul_nbProbes, unsigned long * pul_receivedRepl
 		}
 		else
 		{
+			chronometerInit(&str_timing);
 #ifdef DEBUG
 			fprintf(stderr, "Request #%ld sent\n", *pul_nbProbes);
 #endif
 			/* the getAnswer function returns the number of replies received for each request (boolean value) */
-			*pul_receivedReplies += getAnswer(l_socket, pstr_device); /* wait for an answer and parse it */
+			*pul_receivedReplies += getAnswer(l_socket, pstr_device, &str_timing); /* wait for an answer and parse it */
 		}
 	}
 
@@ -522,5 +534,44 @@ signed char setTargetIpAddress ( unsigned char * puc_targetIpAddress, const opt_
 	}
 
 	return c_retValue;
+}
+
+
+signed char chronometer ( struct timeval * pstr_wantedTimeval )
+{
+	static BOOL uc_everCalledFunction; /* By default set to 0 */
+	struct timeval str_beginningTime, str_tmpTime;	/* If first time the function is called, init static timestamp */
+	signed char c_retValue;
+
+	c_retValue = 0;
+
+	if ( uc_everCalledFunction == FALSE )
+	{
+		uc_everCalledFunction = TRUE;
+		gettimeofday(&str_beginningTime, NULL);
+		memcpy(pstr_wantedTimeval, &str_beginningTime, sizeof(struct timeval));
+	}
+	/* Else we send the difference between first timestamp and actual timestamp */
+	else
+	{
+		gettimeofday(&str_tmpTime, NULL);
+		pstr_wantedTimeval->tv_sec = str_tmpTime.tv_sec - str_beginningTime.tv_sec;
+		pstr_wantedTimeval->tv_usec = str_tmpTime.tv_usec - str_beginningTime.tv_usec;
+	}
+
+	return c_retValue;
+}
+
+
+/* alias */
+signed char chronometerInit ( struct timeval * pstr_wantedTimeval )
+{
+	return chronometer( pstr_wantedTimeval );
+}
+
+
+void printTime ( const struct timeval str_time )
+{
+	fprintf(stdout, "%lu.%2lums", str_time.tv_sec*1000, str_time.tv_usec/1000);
 }
 
