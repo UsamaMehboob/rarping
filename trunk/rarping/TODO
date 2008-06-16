@@ -12,8 +12,9 @@
 [ ] verbosity control
 [ ] timing
 [ ] signal handler
+[ ] separate thread to display current state on pressing <enter>
 
--- > OPTIONS
+-- > FEATURES
 [ ] Spoof MAC address
 [ ] Spoof IP
 [X] send RARP replies instead of requests
@@ -21,3 +22,4 @@
 [ ] exit after a reply
 [ ] interval between two probes
 [X] timeout send/recv
+

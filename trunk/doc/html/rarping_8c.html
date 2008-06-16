@@ -1,6 +1,6 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
-<title>rarping: rarping/rarping.c File Reference</title>
+<title>Rarping: rarping/rarping.c File Reference</title>
 <link href="doxygen.css" rel="stylesheet" type="text/css">
 <link href="tabs.css" rel="stylesheet" type="text/css">
 </head><body>
@@ -30,6 +30,9 @@ Include dependency graph for rarping.c:</div>
 <tr><td class="memItemLeft" nowrap align="right" valign="top">signed char&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="rarping_8c.html#e397cceb6eb270526ed25111b8e4bff3">argumentManagement</a> (long l_argc, char **ppch_argv, <a class="el" href="structopt__t.html">opt_t</a> *pstr_argsDest)</td></tr>
 
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Parse given arguments and fill an opt structure.  <a href="#e397cceb6eb270526ed25111b8e4bff3"></a><br></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="rarping_8c.html#1432cdc2d9d5c8ada6ea3bb523f07f73">initOptionsDefault</a> (<a class="el" href="structopt__t.html">opt_t</a> *pstr_args)</td></tr>
+
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">set options to their default values  <a href="#1432cdc2d9d5c8ada6ea3bb523f07f73"></a><br></td></tr>
 <tr><td class="memItemLeft" nowrap align="right" valign="top"><a class="anchor" name="e8605e2b78cd4a81b6c6b5c30cb7366a"></a><!-- doxytag: member="rarping.c::usage" ref="e8605e2b78cd4a81b6c6b5c30cb7366a" args="(void)" -->
 void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="rarping_8c.html#e8605e2b78cd4a81b6c6b5c30cb7366a">usage</a> (void)</td></tr>
 
@@ -37,48 +40,66 @@ void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="rarp
 <tr><td class="memItemLeft" nowrap align="right" valign="top">void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="rarping_8c.html#975c3819cf5b8555b0b73653625bc83c">parseTimeout</a> (struct timeval *pstr_timeout, char *pch_arg)</td></tr>
 
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">set the send/recv timeout from command line to integers  <a href="#975c3819cf5b8555b0b73653625bc83c"></a><br></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top"><a class="anchor" name="2497a004acee842423e413bd0f7c52a4"></a><!-- doxytag: member="rarping.c::signalHandler" ref="2497a004acee842423e413bd0f7c52a4" args="(void)" -->
+void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="rarping_8c.html#2497a004acee842423e413bd0f7c52a4">signalHandler</a> (void)</td></tr>
+
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">turn on the signal handler <br></td></tr>
 <tr><td class="memItemLeft" nowrap align="right" valign="top">signed char&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="rarping_8c.html#06ebd348792c0bc8027a46188dd634b5">performRequests</a> (const <a class="el" href="structopt__t.html">opt_t</a> *pstr_argsDest)</td></tr>
 
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">perform RARP requests the way defined by user  <a href="#06ebd348792c0bc8027a46188dd634b5"></a><br></td></tr>
 <tr><td class="memItemLeft" nowrap align="right" valign="top">signed char&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="rarping_8c.html#7ed00cf5907b4a33a63d30fcfec8254a">craftPacket</a> (<a class="el" href="structetherPacket__t.html">etherPacket_t</a> *pstr_packet, const <a class="el" href="structopt__t.html">opt_t</a> *pstr_destArgs, struct sockaddr_ll *pstr_device, long l_socket)</td></tr>
 
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">find out and packs the datas we'll send  <a href="#7ed00cf5907b4a33a63d30fcfec8254a"></a><br></td></tr>
-<tr><td class="memItemLeft" nowrap align="right" valign="top">char&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="rarping_8c.html#55097165f72a94eb5df6f5fc49474533">getLowLevelInfos</a> (struct sockaddr_ll *pstr_device, char *pch_ifaceName, long l_socket)</td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">signed char&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="rarping_8c.html#13c258f47f42f6e9a08dae19c34bce70">getLowLevelInfos</a> (struct sockaddr_ll *pstr_device, char *pch_ifaceName, long l_socket)</td></tr>
 
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">fills a sockaddr_ll struct whith hardware address and interface index of a selected device  <a href="#55097165f72a94eb5df6f5fc49474533"></a><br></td></tr>
-<tr><td class="memItemLeft" nowrap align="right" valign="top">char&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="rarping_8c.html#dad173b5bed8748405e915ac9ab64ab1">getLocalHardwareAddress</a> (long l_socket, char *pch_ifaceName, unsigned char *puc_mac)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">fills a sockaddr_ll struct whith hardware address and interface index of a selected device  <a href="#13c258f47f42f6e9a08dae19c34bce70"></a><br></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">signed char&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="rarping_8c.html#9a6902ad34267ecbc0b310fd3ccaa0cb">getLocalHardwareAddress</a> (long l_socket, char *pch_ifaceName, unsigned char *puc_mac)</td></tr>
 
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">fill hw_addr field of pstr_device with local MAC address  <a href="#dad173b5bed8748405e915ac9ab64ab1"></a><br></td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">fill hw_addr field of pstr_device with local MAC address  <a href="#9a6902ad34267ecbc0b310fd3ccaa0cb"></a><br></td></tr>
 <tr><td class="memItemLeft" nowrap align="right" valign="top">unsigned long&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="rarping_8c.html#b184cb462e59b63bec4d7a59f05afea6">getIfaceIndex</a> (char *pch_ifName, long l_socket)</td></tr>
 
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">get Index of used network interface  <a href="#b184cb462e59b63bec4d7a59f05afea6"></a><br></td></tr>
 <tr><td class="memItemLeft" nowrap align="right" valign="top">signed char&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="rarping_8c.html#4d844224c84eb2a75608f8840a5d72be">sendProbe</a> (long l_socket, <a class="el" href="structetherPacket__t.html">etherPacket_t</a> *pstr_packet, struct sockaddr_ll *pstr_device)</td></tr>
 
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">send RARP requests into the wild  <a href="#4d844224c84eb2a75608f8840a5d72be"></a><br></td></tr>
-<tr><td class="memItemLeft" nowrap align="right" valign="top">unsigned char&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="rarping_8c.html#822ee0fd0689cb0c62fe8d78c4b77df8">getAnswer</a> (long l_socket, struct sockaddr_ll *pstr_device)</td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">unsigned char&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="rarping_8c.html#9d5fea7b0530d87151cfebd12cc6a5cc">getAnswer</a> (long l_socket, struct sockaddr_ll *pstr_device, struct timeval *pstr_timing)</td></tr>
 
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">wait for an answer and, if receive any, parse it  <a href="#822ee0fd0689cb0c62fe8d78c4b77df8"></a><br></td></tr>
-<tr><td class="memItemLeft" nowrap align="right" valign="top">char&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="rarping_8c.html#5b747d34b2b3cbc3590092ab1f018da0">parse</a> (<a class="el" href="structetherPacket__t.html">etherPacket_t</a> *pstr_reply, char tch_replySrcIp[], char tch_replySrcHwAddr[], char tch_replyHwAddr[], char tch_replyAddrIp[])</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">wait for an answer and, if receive any, parse it  <a href="#9d5fea7b0530d87151cfebd12cc6a5cc"></a><br></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">signed char&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="rarping_8c.html#8ae63b7cf808d9190afe4bb3a8c2968b">parse</a> (<a class="el" href="structetherPacket__t.html">etherPacket_t</a> *pstr_reply, char tch_replySrcIp[], char tch_replySrcHwAddr[], char tch_replyHwAddr[], char tch_replyAddrIp[])</td></tr>
 
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">parse an reply packet and fill strings to print results out in a clean way  <a href="#5b747d34b2b3cbc3590092ab1f018da0"></a><br></td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">parse an reply packet and fill strings to print results out in a clean way  <a href="#8ae63b7cf808d9190afe4bb3a8c2968b"></a><br></td></tr>
 <tr><td class="memItemLeft" nowrap align="right" valign="top">signed char&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="rarping_8c.html#984e5dd95edfe9b2c7f7811d07e4a7cc">footer</a> (unsigned long ul_sentPackets, unsigned long ul_receivedPackets)</td></tr>
 
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">print out a summary of what happened  <a href="#984e5dd95edfe9b2c7f7811d07e4a7cc"></a><br></td></tr>
 <tr><td class="memItemLeft" nowrap align="right" valign="top">signed long&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="rarping_8c.html#bf75ee27a5591a9c04cb8720abbf4518">openRawSocket</a> (struct timeval str_timeout)</td></tr>
 
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">open a raw socket and set timeout on sending and reception  <a href="#bf75ee27a5591a9c04cb8720abbf4518"></a><br></td></tr>
-<tr><td class="memItemLeft" nowrap align="right" valign="top">signed char&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="rarping_8c.html#6cb7b1e3ef06bb245ce226b8540078d6">loop</a> (unsigned long *pul_nbProbes, unsigned long *pul_receivedReplies, const <a class="el" href="structopt__t.html">opt_t</a> *pstr_argsDest, <a class="el" href="structetherPacket__t.html">etherPacket_t</a> *pstr_packet, struct sockaddr_ll *pstr_device, long l_socket)</td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">signed char&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="rarping_8c.html#56282d3e5a61eb963960b9e342c9209b">loop</a> (const <a class="el" href="structopt__t.html">opt_t</a> *pstr_argsDest, <a class="el" href="structetherPacket__t.html">etherPacket_t</a> *pstr_packet, struct sockaddr_ll *pstr_device, long l_socket)</td></tr>
 
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">sending loop : send packets as many times as wanted  <a href="#6cb7b1e3ef06bb245ce226b8540078d6"></a><br></td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">sending loop : send packets as many times as wanted  <a href="#56282d3e5a61eb963960b9e342c9209b"></a><br></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">signed char&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="rarping_8c.html#728f873a92175b64fb21ff9e4d497af4">setTargetIpAddress</a> (unsigned char *puc_targetIpAddress, const <a class="el" href="structopt__t.html">opt_t</a> *pstr_argsDest)</td></tr>
+
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">fills target protocol address in sent packets according to user choices (option -a)  <a href="#728f873a92175b64fb21ff9e4d497af4"></a><br></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">signed char&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="rarping_8c.html#d86730829a6c0ba8fedfd20e98f5ab46">chronometer</a> (struct timeval *pstr_wantedTimeval)</td></tr>
+
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">fill a timeval struct with elapsed time from beginning to reception  <a href="#d86730829a6c0ba8fedfd20e98f5ab46"></a><br></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">signed char&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="rarping_8c.html#a84ca0cbab3701004dc424a7b83c7eac">chronometerInit</a> (struct timeval *pstr_wantedTimeval)</td></tr>
+
+<tr><td class="memItemLeft" nowrap align="right" valign="top">void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="rarping_8c.html#bcf36475df793b86040321a8896f34e4">printTime</a> (const struct timeval str_time)</td></tr>
+
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">print out elapsed time from a timeval structure to usual format  <a href="#bcf36475df793b86040321a8896f34e4"></a><br></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="rarping_8c.html#abfe4c4e5d4579ed37318039e6b20678">rarpingOnExit</a> (int sig)</td></tr>
+
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">perform a clean exit, calling statistics function and closing the socket  <a href="#abfe4c4e5d4579ed37318039e6b20678"></a><br></td></tr>
 </table>
 <hr><a name="_details"></a><h2>Detailed Description</h2>
 Rarping - send RARP REQUEST to a neighbour host. 
 <p>
 <dl class="see" compact><dt><b>See also:</b></dt><dd>RFC 903</dd></dl>
-<dl class="rcs" compact><dt><b>Author</b></dt><dd>Henri Doreau &lt;<a href="mailto:henri.doreau@gmail.com">henri.doreau@gmail.com</a>&gt; </dd></dl>
-<dl class="rcs" compact><dt><b>Date</b></dt><dd>dimanche 6 avril 2008, 21:17:46 (UTC+0200) </dd></dl>
+<dl class="rcs" compact><dt><b>Author</b></dt><dd>henri.doreau </dd></dl>
+<dl class="rcs" compact><dt><b>Date</b></dt><dd>2008-05-30 22:12:55 +0200 (ven, 30 mai 2008) </dd></dl>
 <p>
-<dl class="rcs" compact><dt><b>Revision</b></dt><dd>10 </dd></dl>
+<dl class="rcs" compact><dt><b>Revision</b></dt><dd>23 </dd></dl>
 <hr><h2>Function Documentation</h2>
 <a class="anchor" name="e397cceb6eb270526ed25111b8e4bff3"></a><!-- doxytag: member="rarping.c::argumentManagement" ref="e397cceb6eb270526ed25111b8e4bff3" args="(long l_argc, char **ppch_argv, opt_t *pstr_argsDest)" -->
 <div class="memitem">
@@ -129,6 +150,60 @@ Parse given arguments and fill an opt structure.
   </table>
 </dl>
 <dl class="see" compact><dt><b>See also:</b></dt><dd><a class="el" href="structopt__t.html" title="Contains options/informations given trought command line.">opt_t</a> </dd></dl>
+
+</div>
+</div><p>
+<a class="anchor" name="d86730829a6c0ba8fedfd20e98f5ab46"></a><!-- doxytag: member="rarping.c::chronometer" ref="d86730829a6c0ba8fedfd20e98f5ab46" args="(struct timeval *pstr_wantedTimeval)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">signed char chronometer           </td>
+          <td>(</td>
+          <td class="paramtype">struct timeval *&nbsp;</td>
+          <td class="paramname"> <em>pstr_wantedTimeval</em>          </td>
+          <td>&nbsp;)&nbsp;</td>
+          <td width="100%"></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+fill a timeval struct with elapsed time from beginning to reception 
+<p>
+<dl compact><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>pstr_wantedTimeval</em>&nbsp;</td><td>is the filled structure </td></tr>
+  </table>
+</dl>
+<dl class="return" compact><dt><b>Returns:</b></dt><dd>Error code according to the execution of the function </dd></dl>
+<dl compact><dt><b>Return values:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>0</em>&nbsp;</td><td>the function ends normally </td></tr>
+  </table>
+</dl>
+
+</div>
+</div><p>
+<a class="anchor" name="a84ca0cbab3701004dc424a7b83c7eac"></a><!-- doxytag: member="rarping.c::chronometerInit" ref="a84ca0cbab3701004dc424a7b83c7eac" args="(struct timeval *pstr_wantedTimeval)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">signed char chronometerInit           </td>
+          <td>(</td>
+          <td class="paramtype">struct timeval *&nbsp;</td>
+          <td class="paramname"> <em>pstr_wantedTimeval</em>          </td>
+          <td>&nbsp;)&nbsp;</td>
+          <td width="100%"></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+@ brief alias to chronometer <dl class="see" compact><dt><b>See also:</b></dt><dd><a class="el" href="rarping_8h.html#d86730829a6c0ba8fedfd20e98f5ab46" title="fill a timeval struct with elapsed time from beginning to reception">chronometer</a> </dd></dl>
 
 </div>
 </div><p>
@@ -236,7 +311,7 @@ print out a summary of what happened
 
 </div>
 </div><p>
-<a class="anchor" name="822ee0fd0689cb0c62fe8d78c4b77df8"></a><!-- doxytag: member="rarping.c::getAnswer" ref="822ee0fd0689cb0c62fe8d78c4b77df8" args="(long l_socket, struct sockaddr_ll *pstr_device)" -->
+<a class="anchor" name="9d5fea7b0530d87151cfebd12cc6a5cc"></a><!-- doxytag: member="rarping.c::getAnswer" ref="9d5fea7b0530d87151cfebd12cc6a5cc" args="(long l_socket, struct sockaddr_ll *pstr_device, struct timeval *pstr_timing)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
@@ -250,7 +325,13 @@ print out a summary of what happened
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">struct sockaddr_ll *&nbsp;</td>
-          <td class="paramname"> <em>pstr_device</em></td><td>&nbsp;</td>
+          <td class="paramname"> <em>pstr_device</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">struct timeval *&nbsp;</td>
+          <td class="paramname"> <em>pstr_timing</em></td><td>&nbsp;</td>
         </tr>
         <tr>
           <td></td>
@@ -268,6 +349,7 @@ wait for an answer and, if receive any, parse it
   <table border="0" cellspacing="2" cellpadding="0">
     <tr><td valign="top"></td><td valign="top"><em>l_socket</em>&nbsp;</td><td>is the raw socket opened before </td></tr>
     <tr><td valign="top"></td><td valign="top"><em>pstr_device</em>&nbsp;</td><td>low level informations to receive datas without any encapsulation </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>pstr_timing</em>&nbsp;</td><td>used to chronometer an dprint out how fast the received replies are </td></tr>
   </table>
 </dl>
 <dl class="return" compact><dt><b>Returns:</b></dt><dd>the number of replies received </dd></dl>
@@ -312,12 +394,12 @@ get Index of used network interface
 
 </div>
 </div><p>
-<a class="anchor" name="dad173b5bed8748405e915ac9ab64ab1"></a><!-- doxytag: member="rarping.c::getLocalHardwareAddress" ref="dad173b5bed8748405e915ac9ab64ab1" args="(long l_socket, char *pch_ifaceName, unsigned char *puc_mac)" -->
+<a class="anchor" name="9a6902ad34267ecbc0b310fd3ccaa0cb"></a><!-- doxytag: member="rarping.c::getLocalHardwareAddress" ref="9a6902ad34267ecbc0b310fd3ccaa0cb" args="(long l_socket, char *pch_ifaceName, unsigned char *puc_mac)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">char getLocalHardwareAddress           </td>
+          <td class="memname">signed char getLocalHardwareAddress           </td>
           <td>(</td>
           <td class="paramtype">long&nbsp;</td>
           <td class="paramname"> <em>l_socket</em>, </td>
@@ -363,12 +445,12 @@ fill hw_addr field of pstr_device with local MAC address
 
 </div>
 </div><p>
-<a class="anchor" name="55097165f72a94eb5df6f5fc49474533"></a><!-- doxytag: member="rarping.c::getLowLevelInfos" ref="55097165f72a94eb5df6f5fc49474533" args="(struct sockaddr_ll *pstr_device, char *pch_ifaceName, long l_socket)" -->
+<a class="anchor" name="13c258f47f42f6e9a08dae19c34bce70"></a><!-- doxytag: member="rarping.c::getLowLevelInfos" ref="13c258f47f42f6e9a08dae19c34bce70" args="(struct sockaddr_ll *pstr_device, char *pch_ifaceName, long l_socket)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">char getLowLevelInfos           </td>
+          <td class="memname">signed char getLowLevelInfos           </td>
           <td>(</td>
           <td class="paramtype">struct sockaddr_ll *&nbsp;</td>
           <td class="paramname"> <em>pstr_device</em>, </td>
@@ -414,25 +496,41 @@ fills a sockaddr_ll struct whith hardware address and interface index of a selec
 
 </div>
 </div><p>
-<a class="anchor" name="6cb7b1e3ef06bb245ce226b8540078d6"></a><!-- doxytag: member="rarping.c::loop" ref="6cb7b1e3ef06bb245ce226b8540078d6" args="(unsigned long *pul_nbProbes, unsigned long *pul_receivedReplies, const opt_t *pstr_argsDest, etherPacket_t *pstr_packet, struct sockaddr_ll *pstr_device, long l_socket)" -->
+<a class="anchor" name="1432cdc2d9d5c8ada6ea3bb523f07f73"></a><!-- doxytag: member="rarping.c::initOptionsDefault" ref="1432cdc2d9d5c8ada6ea3bb523f07f73" args="(opt_t *pstr_args)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void initOptionsDefault           </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structopt__t.html">opt_t</a> *&nbsp;</td>
+          <td class="paramname"> <em>pstr_args</em>          </td>
+          <td>&nbsp;)&nbsp;</td>
+          <td width="100%"></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+set options to their default values 
+<p>
+<dl compact><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>pstr_argsDest</em>&nbsp;</td><td>points to the structure where user choices are stored </td></tr>
+  </table>
+</dl>
+<dl class="see" compact><dt><b>See also:</b></dt><dd><a class="el" href="structopt__t.html" title="Contains options/informations given trought command line.">opt_t</a> </dd></dl>
+
+</div>
+</div><p>
+<a class="anchor" name="56282d3e5a61eb963960b9e342c9209b"></a><!-- doxytag: member="rarping.c::loop" ref="56282d3e5a61eb963960b9e342c9209b" args="(const opt_t *pstr_argsDest, etherPacket_t *pstr_packet, struct sockaddr_ll *pstr_device, long l_socket)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
           <td class="memname">signed char loop           </td>
           <td>(</td>
-          <td class="paramtype">unsigned long *&nbsp;</td>
-          <td class="paramname"> <em>pul_nbProbes</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">unsigned long *&nbsp;</td>
-          <td class="paramname"> <em>pul_receivedReplies</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
           <td class="paramtype">const <a class="el" href="structopt__t.html">opt_t</a> *&nbsp;</td>
           <td class="paramname"> <em>pstr_argsDest</em>, </td>
         </tr>
@@ -468,8 +566,6 @@ sending loop : send packets as many times as wanted
 <p>
 <dl compact><dt><b>Parameters:</b></dt><dd>
   <table border="0" cellspacing="2" cellpadding="0">
-    <tr><td valign="top"></td><td valign="top"><em>pul_nbProbes</em>&nbsp;</td><td>points to the number of requests correctly sent </td></tr>
-    <tr><td valign="top"></td><td valign="top"><em>pul_receivedReplies</em>&nbsp;</td><td>points to the number of received replies </td></tr>
     <tr><td valign="top"></td><td valign="top"><em>pstr_argsDest</em>&nbsp;</td><td>points to the structure which contains user inputs </td></tr>
     <tr><td valign="top"></td><td valign="top"><em>pstr_packet</em>&nbsp;</td><td>points to the packet to send </td></tr>
     <tr><td valign="top"></td><td valign="top"><em>sockaddr_ll</em>&nbsp;</td><td>low level information to send datas without encapsulation </td></tr>
@@ -513,12 +609,12 @@ open a raw socket and set timeout on sending and reception
 
 </div>
 </div><p>
-<a class="anchor" name="5b747d34b2b3cbc3590092ab1f018da0"></a><!-- doxytag: member="rarping.c::parse" ref="5b747d34b2b3cbc3590092ab1f018da0" args="(etherPacket_t *pstr_reply, char tch_replySrcIp[], char tch_replySrcHwAddr[], char tch_replyHwAddr[], char tch_replyAddrIp[])" -->
+<a class="anchor" name="8ae63b7cf808d9190afe4bb3a8c2968b"></a><!-- doxytag: member="rarping.c::parse" ref="8ae63b7cf808d9190afe4bb3a8c2968b" args="(etherPacket_t *pstr_reply, char tch_replySrcIp[], char tch_replySrcHwAddr[], char tch_replyHwAddr[], char tch_replyAddrIp[])" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">char parse           </td>
+          <td class="memname">signed char parse           </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="structetherPacket__t.html">etherPacket_t</a> *&nbsp;</td>
           <td class="paramname"> <em>pstr_reply</em>, </td>
@@ -650,6 +746,60 @@ perform RARP requests the way defined by user
 
 </div>
 </div><p>
+<a class="anchor" name="bcf36475df793b86040321a8896f34e4"></a><!-- doxytag: member="rarping.c::printTime" ref="bcf36475df793b86040321a8896f34e4" args="(const struct timeval str_time)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void printTime           </td>
+          <td>(</td>
+          <td class="paramtype">const struct timeval&nbsp;</td>
+          <td class="paramname"> <em>str_time</em>          </td>
+          <td>&nbsp;)&nbsp;</td>
+          <td width="100%"></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+print out elapsed time from a timeval structure to usual format 
+<p>
+<dl compact><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>str_time</em>&nbsp;</td><td>contains a number of seconds and microseconds </td></tr>
+  </table>
+</dl>
+
+</div>
+</div><p>
+<a class="anchor" name="abfe4c4e5d4579ed37318039e6b20678"></a><!-- doxytag: member="rarping.c::rarpingOnExit" ref="abfe4c4e5d4579ed37318039e6b20678" args="(int sig)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void rarpingOnExit           </td>
+          <td>(</td>
+          <td class="paramtype">int&nbsp;</td>
+          <td class="paramname"> <em>sig</em>          </td>
+          <td>&nbsp;)&nbsp;</td>
+          <td width="100%"></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+perform a clean exit, calling statistics function and closing the socket 
+<p>
+<dl compact><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>int</em>&nbsp;</td><td>sig received signal that force rarping to exit </td></tr>
+  </table>
+</dl>
+
+</div>
+</div><p>
 <a class="anchor" name="4d844224c84eb2a75608f8840a5d72be"></a><!-- doxytag: member="rarping.c::sendProbe" ref="4d844224c84eb2a75608f8840a5d72be" args="(long l_socket, etherPacket_t *pstr_packet, struct sockaddr_ll *pstr_device)" -->
 <div class="memitem">
 <div class="memproto">
@@ -701,8 +851,51 @@ send RARP requests into the wild
 
 </div>
 </div><p>
+<a class="anchor" name="728f873a92175b64fb21ff9e4d497af4"></a><!-- doxytag: member="rarping.c::setTargetIpAddress" ref="728f873a92175b64fb21ff9e4d497af4" args="(unsigned char *puc_targetIpAddress, const opt_t *pstr_argsDest)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">signed char setTargetIpAddress           </td>
+          <td>(</td>
+          <td class="paramtype">unsigned char *&nbsp;</td>
+          <td class="paramname"> <em>puc_targetIpAddress</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="structopt__t.html">opt_t</a> *&nbsp;</td>
+          <td class="paramname"> <em>pstr_argsDest</em></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td width="100%"></td>
+        </tr>
+      </table>
 </div>
-<hr size="1"><address style="text-align: right;"><small>Generated on Mon Apr 14 22:02:14 2008 for rarping by&nbsp;
+<div class="memdoc">
+
+<p>
+fills target protocol address in sent packets according to user choices (option -a) 
+<p>
+<dl compact><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>puc_targetIpAddress</em>&nbsp;</td><td>target protocol address field in crafted packet </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>pstr_argsDest</em>&nbsp;</td><td>choosen user's inputs </td></tr>
+  </table>
+</dl>
+<dl class="return" compact><dt><b>Returns:</b></dt><dd>Error code according to the execution of the function </dd></dl>
+<dl compact><dt><b>Return values:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>0</em>&nbsp;</td><td>the function ends normally </td></tr>
+  </table>
+</dl>
+
+</div>
+</div><p>
+</div>
+<hr size="1"><address style="text-align: right;"><small>Generated on Mon Jun 16 10:25:48 2008 for Rarping by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img src="doxygen.png" alt="doxygen" align="middle" border="0"></a> 1.5.5 </small></address>
 </body>

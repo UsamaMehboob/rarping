@@ -13,7 +13,7 @@
 /* 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2.1 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
@@ -29,6 +29,14 @@
 
 #include "rarping.h"
 
+/* Global copy of the raw socket file descriptor : used to call close() on sigterm */
+long l_SockRaw = 0;
+/* -------- */
+/* Global counters : current probe number and total number of received replies */
+unsigned long ul_NbProbes, ul_ReceivedReplies;
+/* -------- */
+
+
 
 int main ( int i_argc, char **ppch_argv )
 {
@@ -43,6 +51,8 @@ int main ( int i_argc, char **ppch_argv )
     /* Parse args using getopt to fill a struct (args), return < 0 if problem encountered */
     if ( argumentManagement(l_argc, ppch_argv, &str_args) > 0 )
     {
+		/* We turn on the signal handler */
+		signalHandler();
         /* perform RARP requests as wanted by user (using args struct) */
 		c_retValue = performRequests(&str_args);
     }
@@ -53,7 +63,6 @@ int main ( int i_argc, char **ppch_argv )
         /* and exit < 0 */
         c_retValue = -1;
     }
-
 
     /* Simple exit point */
     return c_retValue;
@@ -176,18 +185,26 @@ void parseTimeout ( struct timeval * pstr_timeout, char * pch_arg )
 }
 
 
+void signalHandler ( void )
+{
+	/* SIGINT is sent on ctrl+c */
+	signal(SIGINT, rarpingOnExit);
+}
+
+
 signed char performRequests ( const opt_t *pstr_argsDest )
 {
 	long l_socket;
-	unsigned long ul_nbProbes, ul_receivedReplies;
 	signed char c_retValue;
 	etherPacket_t str_packet;
 	struct sockaddr_ll str_device; /* device independant physical layer address */
 
 	c_retValue = 0;
-	ul_nbProbes = 0;
-	ul_receivedReplies = 0;
+	/* These two ones are globals :( */
+	ul_NbProbes = 0;
+	ul_ReceivedReplies = 0;
 	/* --- */
+
 	if ( ( l_socket = openRawSocket(pstr_argsDest->str_timeout) ) < 0)
 	{
 		c_retValue = -1;
@@ -198,16 +215,21 @@ signed char performRequests ( const opt_t *pstr_argsDest )
 		if ( craftPacket(&str_packet, pstr_argsDest, &str_device, l_socket) == 0 )
 		{
 			/* Sending/Receiving Loop */
-			loop(&ul_nbProbes, &ul_receivedReplies, pstr_argsDest, &str_packet, &str_device, l_socket);
+			loop(pstr_argsDest, &str_packet, &str_device, l_socket);
 		}
 		else
 		{
 			fprintf(stderr, "Can't craft packets\n");
 			c_retValue = -2;
 		}
-		/* This code will be executed whatever happens, after socket has been (correctly) opened */
-		footer(ul_nbProbes, ul_receivedReplies);
-		close(l_socket);
+		/* This code will be executed whatever happens, except catching signals, after socket has been (correctly) opened */
+		footer(ul_NbProbes, ul_ReceivedReplies);
+		
+		if (close(l_socket) < 0)
+		{
+			perror("close");
+			c_retValue = -3;
+		}
 	}
 
 	/* This code will be executed every time */
@@ -431,14 +453,19 @@ signed char parse ( etherPacket_t * pstr_reply, char tch_replySrcIp[], char tch_
 signed char footer ( unsigned long ul_sentPackets, unsigned long ul_receivedPackets )
 {
 	signed char c_retValue;
+	float f_lostProbesPercent;
 
 	c_retValue = 0;
 
 	/* Print out results if at least one request sent */
 	if (ul_sentPackets > 0)
 	{
-		fprintf(stdout, "Sent %ld request(s)\n", ul_sentPackets-1);
+		fprintf(stdout, "-- Rarping statistics --");
+		fprintf(stdout, "\nSent %ld request(s)\n", ul_sentPackets-1);
 		fprintf(stdout, "Received %ld response(s)\n", ul_receivedPackets);
+		
+		f_lostProbesPercent = 100*(ul_sentPackets - ul_receivedPackets) / ul_sentPackets;
+		fprintf(stdout, "Lost : %.2f%%\n", f_lostProbesPercent);
 	}
 	else
 	{
@@ -464,39 +491,41 @@ signed long openRawSocket ( struct timeval str_timeout )
 	}		
 	else
 	{
-		/* set the socket send and receive timeout */
+		/* set the socket sending and receiving timeouts */
 		setsockopt(l_sock, SOL_SOCKET, SO_RCVTIMEO, (char*)&str_timeout, sizeof(str_timeout));
 		setsockopt(l_sock, SOL_SOCKET, SO_SNDTIMEO, (char*)&str_timeout, sizeof(str_timeout));
 #ifdef DEBUG
 		fprintf(stderr, "Timeout set to %lu ms\n", str_timeout.tv_sec*1000+str_timeout.tv_usec/1000);
 #endif
 	}
-
+	/* Save the l_sock value to be able to close it as soon as required */
+	l_SockRaw = l_sock;
+	
 	return l_sock;
 }
 
 
-signed char loop( unsigned long * pul_nbProbes, unsigned long * pul_receivedReplies, const opt_t * pstr_argsDest, etherPacket_t * pstr_packet, struct sockaddr_ll * pstr_device, long l_socket )
+signed char loop( const opt_t * pstr_argsDest, etherPacket_t * pstr_packet, struct sockaddr_ll * pstr_device, long l_socket )
 {
 	signed char c_retValue;
 	struct timeval str_timing;
 
 	c_retValue = 0;
 	/* --- */
-	while ( (++(*pul_nbProbes) <= pstr_argsDest->ul_count) || (!(pstr_argsDest->ul_count)) )/* infinite loop if no count specified */
+	while ( (++(ul_NbProbes) <= pstr_argsDest->ul_count) || (!(pstr_argsDest->ul_count)) )/* infinite loop if no count specified */
 	{
 		if (sendProbe(l_socket, pstr_packet, pstr_device) != 1)
 		{
-			fprintf(stderr, "Can't send request #%ld\n", *pul_nbProbes);
+			fprintf(stderr, "Can't send request #%ld\n", ul_NbProbes);
 		}
 		else
 		{
 			chronometerInit(&str_timing);
 #ifdef DEBUG
-			fprintf(stderr, "Request #%ld sent\n", *pul_nbProbes);
+			fprintf(stderr, "Request #%ld sent\n", ul_NbProbes);
 #endif
 			/* the getAnswer function returns the number of replies received for each request (boolean value) */
-			*pul_receivedReplies += getAnswer(l_socket, pstr_device, &str_timing); /* wait for an answer and parse it */
+			ul_ReceivedReplies += getAnswer(l_socket, pstr_device, &str_timing); /* wait for an answer and parse it */
 		}
 	}
 
@@ -573,5 +602,16 @@ signed char chronometerInit ( struct timeval * pstr_wantedTimeval )
 void printTime ( const struct timeval str_time )
 {
 	fprintf(stdout, "%lu.%2lums", str_time.tv_sec*1000, str_time.tv_usec/1000);
+}
+
+
+void rarpingOnExit( int sig )
+{
+	fprintf(stderr, "\nReceived signal : SIGINT (%d)\n", sig);
+	/* Brief summary of what were sent/received */
+	footer(ul_NbProbes, ul_ReceivedReplies);
+	/* We close the socket before exiting */
+	close(l_SockRaw);
+	exit(EXIT_FAILURE);
 }
 

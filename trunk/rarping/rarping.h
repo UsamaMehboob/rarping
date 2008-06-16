@@ -12,7 +12,7 @@
 /* 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2.1 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
@@ -36,6 +36,7 @@
 #include <string.h> /* strncpy(), memcpy() ... */
 #include <unistd.h> /* getopt() : command line parsing */
 #include <sys/time.h> /* struc timeval : used to set timeout*/
+#include <signal.h> /* signal() */
 #include <errno.h>
 #include <sys/socket.h> /* Network */
 #include <netinet/in.h> /* inet_ntoa */
@@ -138,6 +139,7 @@ typedef struct {
 	unsigned char  uct_targetIpAddr[4];
 } rarpPacket_t;
 
+
 /** @brief full ethernet trame, MAC headers + RARP packet as described above */
 typedef struct {
 	/** @brief Harware address of the device we send to */
@@ -198,7 +200,20 @@ void parseTimeout ( struct timeval * pstr_timeout, char * pch_arg );
  */
 signed char argumentManagement ( long l_argc, char **ppch_argv, opt_t *pstr_argsDest );
 
+
+/**
+ * @brief set options to their default values
+ * @param pstr_argsDest points to the structure where user choices are stored
+ * @see opt_t
+ */ 
 void initOptionsDefault ( opt_t * pstr_args );
+
+
+/**
+ * @brief turn on the signal handler
+ */
+void signalHandler ( void );
+
 
 /**
  * @brief perform RARP requests the way defined by user
@@ -315,8 +330,6 @@ signed long openRawSocket ( struct timeval str_timeout );
 
 /**
  * @brief sending loop : send packets as many times as wanted
- * @param pul_nbProbes points to the number of requests correctly sent
- * @param pul_receivedReplies points to the number of received replies
  * @param pstr_argsDest points to the structure which contains user inputs
  * @param pstr_packet points to the packet to send
  * @param sockaddr_ll low level information to send datas without encapsulation
@@ -324,7 +337,7 @@ signed long openRawSocket ( struct timeval str_timeout );
  * @return Error code according to the execution of the function
  * @retval 0 the function ends normally
  */
-signed char loop( unsigned long * pul_nbProbes, unsigned long * pul_receivedReplies, const opt_t * pstr_argsDest, etherPacket_t * pstr_packet, struct sockaddr_ll * pstr_device, long l_socket );
+signed char loop( const opt_t * pstr_argsDest, etherPacket_t * pstr_packet, struct sockaddr_ll * pstr_device, long l_socket );
 
 
 /**
@@ -337,11 +350,34 @@ signed char loop( unsigned long * pul_nbProbes, unsigned long * pul_receivedRepl
 signed char setTargetIpAddress ( unsigned char * puc_targetIpAddress, const opt_t * pstr_argsDest );
 
 
+/**
+ * @brief fill a timeval struct with elapsed time from beginning to reception
+ * @param pstr_wantedTimeval is the filled structure
+ * @return Error code according to the execution of the function
+ * @retval 0 the function ends normally
+ */
 signed char chronometer ( struct timeval * pstr_wantedTimeval );
 
+
+/**
+ * @ brief alias to chronometer
+ * @see chronometer
+ */
 signed char chronometerInit ( struct timeval * pstr_wantedTimeval );
 
+
+/**
+ * @brief print out elapsed time from a timeval structure to usual format
+ * @param str_time contains a number of seconds and microseconds
+ */
 void printTime ( const struct timeval str_time );
+
+
+/**
+ * @brief perform a clean exit, calling statistics function and closing the socket
+ * @param int sig received signal that force rarping to exit
+ */
+void rarpingOnExit ( int sig );
 /* --- -- --- -- --- -- --- -- --- -- --- -- --- */
 
 
