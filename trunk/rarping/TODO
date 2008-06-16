@@ -10,8 +10,8 @@
 
 -- > SOFTWARE
 [ ] verbosity control
-[ ] timing
-[ ] signal handler
+[\] timing
+[X] signal handler
 [ ] separate thread to display current state on pressing <enter>
 
 -- > FEATURES
