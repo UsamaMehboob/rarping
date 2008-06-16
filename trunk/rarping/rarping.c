@@ -81,7 +81,7 @@ signed char argumentManagement ( long l_argc, char **ppch_argv, opt_t *pstr_args
 
 
 	/* Parsing options args */
-	while ( ( ch_opt = getopt( l_argc, ppch_argv, "I:c:t:a:Vh" ) ) != -1 ) 
+	while ( ( ch_opt = getopt( l_argc, ppch_argv, "I:c:t:a:w:Vh" ) ) != -1 ) 
 	{
 		switch(ch_opt)
 		{
@@ -103,10 +103,20 @@ signed char argumentManagement ( long l_argc, char **ppch_argv, opt_t *pstr_args
 			/* set timeout */
 			case 't'	:	parseTimeout(&(pstr_argsDest->str_timeout), optarg);
 							break;
+			
+			/* pause between probes */
+			case 'w'	:	pstr_argsDest->ul_waitingMilliSeconds = 0;
+							pstr_argsDest->ul_waitingMilliSeconds = ABS(atol(optarg));
+							if (pstr_argsDest->ul_waitingMilliSeconds == 0)
+							{
+								fprintf(stderr, "Ivalid delay (%s), must be an integer, of milliseconds\n", optarg);
+								exit(EXIT_FAILURE);
+							}
+							break;
 
 			/* print version and exit */
 			case 'V'	:	fprintf(stdout, "%s\n", VERSION);
-							exit(1);
+							exit(EXIT_FAILURE);
 							break;
 			/* print out a short help mesage */
 			case 'h'	:
@@ -143,20 +153,21 @@ void initOptionsDefault ( opt_t * pstr_args )
 	pstr_args->uc_choosenOpCode = RARP_OPCODE_REQUEST;
 	pstr_args->str_timeout.tv_sec = S_TIMEOUT_DEFAULT;
 	pstr_args->str_timeout.tv_usec = US_TIMEOUT_DEFAULT;
-
+	pstr_args->ul_waitingMilliSeconds = MS_DEFAULT_DELAY;	
 	return;
 }
 
 void usage ( void )
 {
-	fprintf(stderr, "Usage : ./rarping [-h] [-c count] [-a IP address] [-I interface] request_MAC_address\n");
-	fprintf(stderr, "\t-h : print this screen and exit\n");
-	fprintf(stderr, "\t-V : print version and exit\n");
-	fprintf(stderr, "\t-c count : send [count] request(s) and exit\n");
+	fprintf(stderr, "Usage : ./rarping [options] [-I interface] request_MAC_address\n");
+	fprintf(stderr, "\t-h \t: print this screen and exit\n");
+	fprintf(stderr, "\t-V \t: print version and exit\n");
+	fprintf(stderr, "\t-c [count] \t: send [count] request(s) and exit\n");
 	fprintf(stderr, "\t-a [IP address] : send replies instead of requests, [IP address] is the content of the reply\n");
-	fprintf(stderr, "\t-t timeout : set the send/recv timeout value to [timeout] milliseconds (default 1000)\n");
-	fprintf(stderr, "\t-I interface : network device to use\n");
-	fprintf(stderr, "\trequest_MAC_address : hardware address we request associated IP address\n");
+	fprintf(stderr, "\t-t [timeout] \t: set the send/recv timeout value to [timeout] milliseconds (default 1000)\n");
+	fprintf(stderr, "\t-w [delay] \t: set the delay between two probes to [delay] milliseconds (default 1000)\n");
+	fprintf(stderr, "\t-I interface \t: network device to use (REQUIRED)\n");
+	fprintf(stderr, "request_MAC_address : hardware address we request associated IP address (REQUIRED)\n");
 	fprintf(stderr, "For example : ./rarping -I eth0 00:03:13:37:be:ef\n");
 
 	return;
@@ -372,16 +383,19 @@ signed char sendProbe ( long l_socket, etherPacket_t * pstr_packet, struct socka
 }
 
 
-unsigned char getAnswer ( long l_socket, struct sockaddr_ll * pstr_device, struct timeval * pstr_timing )
+unsigned char getAnswer ( long l_socket, struct sockaddr_ll * pstr_device, const struct timeval str_sendingMoment )
 {
 	etherPacket_t str_reply; /* to store received datas */
 	struct in_addr str_replySrcIpAddr; /* to store the IP address of the sender of the replies */
 	/* strings to print out results in a clean way */
 	char tch_replySrcIp[IP_ADDR_SIZE+1], tch_replySrcHwAddr[MAC_ADDR_SIZE+1], tch_replyHwAddr[MAC_ADDR_SIZE+1], tch_replyAddrIp[IP_ADDR_SIZE+1];
 	unsigned char uc_retValue;
+	unsigned long ul_reception;
+	struct timeval str_recvMoment, str_delay; /* delay is the time elapsed between sending and reception */
 
 	/* usual initialisation */
 	uc_retValue = 1;
+	ul_reception = 0;
 	bzero(&str_reply, sizeof(etherPacket_t));
 	/* strings to print results out */
 	bzero(tch_replySrcIp, IP_ADDR_SIZE+1);
@@ -395,17 +409,25 @@ unsigned char getAnswer ( long l_socket, struct sockaddr_ll * pstr_device, struc
 #endif
 
 	/* Reception */
-	if ( recvfrom(l_socket, &str_reply, sizeof(etherPacket_t), 0, (struct sockaddr *)pstr_device, (unsigned int *)sizeof(struct sockaddr_ll)) > 0 )
+	if ( (ul_reception = recvfrom(l_socket, &str_reply, sizeof(etherPacket_t), 0, (struct sockaddr *)pstr_device, (unsigned int *)sizeof(struct sockaddr_ll))) > 0 )
 	{
 		/* If received packet is a RARP reply */
-		if ( (str_reply.us_ethType == htons(ETH_TYPE_RARP)) && (str_reply.str_packet.us_opcode == htons(RARP_OPCODE_REPLY)) )
+		if ( ( (str_reply.us_ethType == htons(ETH_TYPE_RARP)) && (str_reply.str_packet.us_opcode == htons(RARP_OPCODE_REPLY)) ))
 		{
-			chronometer(pstr_timing);
+			gettimeofday(&str_recvMoment, NULL);
+			str_delay = timeDiff(str_sendingMoment, str_recvMoment);
 			/* we craft strings to print results using received packet */
 			parse(&str_reply, tch_replySrcIp, tch_replySrcHwAddr, tch_replyHwAddr, tch_replyAddrIp);
-			fprintf(stdout, "Reply received from %s (%s) : %s has %s ", tch_replySrcIp, tch_replySrcHwAddr, tch_replyHwAddr, tch_replyAddrIp);
-			printTime(*pstr_timing);
+			fprintf(stdout, "Reply received from %s (%s) : %s is at %s ", tch_replySrcIp, tch_replySrcHwAddr, tch_replyHwAddr, tch_replyAddrIp);
+			printTime_ms(str_delay);
 			fprintf(stdout, "\n");
+		}
+		else
+		{
+#if defined(DEBUG)
+#define __MAC(i) (str_reply.uct_senderHwAddr[(i)])
+			fprintf(stdout, "Unknown packet received (ether type = 0x%04x) from %02x:%02x:%02x:%02x:%02x:%02x\n", ntohs(str_reply.us_ethType), __MAC(0), __MAC(1), __MAC(2), __MAC(3), __MAC(4), __MAC(5));
+#endif 
 		}
 	}
 	else
@@ -438,7 +460,7 @@ signed char parse ( etherPacket_t * pstr_reply, char tch_replySrcIp[], char tch_
 	 * Fill the string tch_replySrcHwAddr with formatted MAC address contained in received datas
 	 * This is the hardware address of the sender of the parsed reply
 	 */
-#define MAC(i) pstr_reply->str_packet.uct_srcHwAddr[(i)]
+#define MAC(i) pstr_reply->uct_senderHwAddr[(i)]
 	snprintf(tch_replySrcHwAddr, MAC_ADDR_SIZE+1, "%02x:%02x:%02x:%02x:%02x:%02x", MAC(0), MAC(1), MAC(2), MAC(3), MAC(4), MAC(5));
 
 	/* The same way, but with Hardware Address of the host we requested about (this must be the same than the one specified by user)) */
@@ -461,7 +483,7 @@ signed char footer ( unsigned long ul_sentPackets, unsigned long ul_receivedPack
 	if (ul_sentPackets > 0)
 	{
 		fprintf(stdout, "-- Rarping statistics --");
-		fprintf(stdout, "\nSent %ld request(s)\n", ul_sentPackets-1);
+		fprintf(stdout, "\nSent %ld probe(s)\n", ul_sentPackets);
 		fprintf(stdout, "Received %ld response(s)\n", ul_receivedPackets);
 		
 		f_lostProbesPercent = 100*(ul_sentPackets - ul_receivedPackets) / ul_sentPackets;
@@ -508,11 +530,11 @@ signed long openRawSocket ( struct timeval str_timeout )
 signed char loop( const opt_t * pstr_argsDest, etherPacket_t * pstr_packet, struct sockaddr_ll * pstr_device, long l_socket )
 {
 	signed char c_retValue;
-	struct timeval str_timing;
+	struct timeval str_sendingMoment;
 
 	c_retValue = 0;
 	/* --- */
-	while ( (++(ul_NbProbes) <= pstr_argsDest->ul_count) || (!(pstr_argsDest->ul_count)) )/* infinite loop if no count specified */
+	while ( (ul_NbProbes+1 <= pstr_argsDest->ul_count) || (!(pstr_argsDest->ul_count)) )/* infinite loop if no count specified */
 	{
 		if (sendProbe(l_socket, pstr_packet, pstr_device) != 1)
 		{
@@ -520,13 +542,15 @@ signed char loop( const opt_t * pstr_argsDest, etherPacket_t * pstr_packet, stru
 		}
 		else
 		{
-			chronometerInit(&str_timing);
+			ul_NbProbes++;
+			gettimeofday(&str_sendingMoment, NULL); /* Record of sending timestamp */
 #ifdef DEBUG
 			fprintf(stderr, "Request #%ld sent\n", ul_NbProbes);
 #endif
 			/* the getAnswer function returns the number of replies received for each request (boolean value) */
-			ul_ReceivedReplies += getAnswer(l_socket, pstr_device, &str_timing); /* wait for an answer and parse it */
+			ul_ReceivedReplies += getAnswer(l_socket, pstr_device, str_sendingMoment); /* wait for an answer and parse it */
 		}
+		usleep(pstr_argsDest->ul_waitingMilliSeconds*1000);
 	}
 
 	return c_retValue;
@@ -566,42 +590,21 @@ signed char setTargetIpAddress ( unsigned char * puc_targetIpAddress, const opt_
 }
 
 
-signed char chronometer ( struct timeval * pstr_wantedTimeval )
+struct timeval timeDiff ( const struct timeval str_beginning, const struct timeval str_termination )
 {
-	static BOOL uc_everCalledFunction; /* By default set to 0 */
-	struct timeval str_beginningTime, str_tmpTime;	/* If first time the function is called, init static timestamp */
-	signed char c_retValue;
+	struct timeval str_diff = {0, 0};
 
-	c_retValue = 0;
+	/* We send the difference between first timestamp and second timestamp */
+	str_diff.tv_sec = str_termination.tv_sec - str_beginning.tv_sec;
+	str_diff.tv_usec = str_termination.tv_usec - str_beginning.tv_usec;
 
-	if ( uc_everCalledFunction == FALSE )
-	{
-		uc_everCalledFunction = TRUE;
-		gettimeofday(&str_beginningTime, NULL);
-		memcpy(pstr_wantedTimeval, &str_beginningTime, sizeof(struct timeval));
-	}
-	/* Else we send the difference between first timestamp and actual timestamp */
-	else
-	{
-		gettimeofday(&str_tmpTime, NULL);
-		pstr_wantedTimeval->tv_sec = str_tmpTime.tv_sec - str_beginningTime.tv_sec;
-		pstr_wantedTimeval->tv_usec = str_tmpTime.tv_usec - str_beginningTime.tv_usec;
-	}
-
-	return c_retValue;
+	return str_diff;
 }
 
 
-/* alias */
-signed char chronometerInit ( struct timeval * pstr_wantedTimeval )
+void printTime_ms ( const struct timeval str_time )
 {
-	return chronometer( pstr_wantedTimeval );
-}
-
-
-void printTime ( const struct timeval str_time )
-{
-	fprintf(stdout, "%lu.%2lums", str_time.tv_sec*1000, str_time.tv_usec/1000);
+	fprintf(stdout, "%lu.%02lums", str_time.tv_sec*1000, str_time.tv_usec/1000);
 }
 
 

@@ -7,12 +7,15 @@
 [X] split the biggest functions into smaller ones
 [ ] dispatch code into smaller files
 [ ] write man page
+[ ] More testing, especially on stressed conditions
 
 -- > SOFTWARE
 [ ] verbosity control
-[\] timing
+[X] timing
 [X] signal handler
 [ ] separate thread to display current state on pressing <enter>
+[ ] More ways to specify delay (float, seconds, milliseconds etc...)
+[ ] Support of non-standard replies
 
 -- > FEATURES
 [ ] Spoof MAC address
@@ -22,4 +25,5 @@
 [ ] exit after a reply
 [ ] interval between two probes
 [X] timeout send/recv
+[ ] maximum retries
 

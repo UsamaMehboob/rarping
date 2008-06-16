@@ -97,7 +97,7 @@
 #define RARP_OPCODE_REQUEST 0x03
 /** @def RARP_OPCODE_REPLY
  * operation code for a RARP reply */
-#define RARP_OPCODE_REPLY 0x04
+#define RARP_OPCODE_REPLY 0x0004
 
 /** @def IP_ADDR_SIZE
  * max length of an IP address in standard notation */
@@ -112,6 +112,11 @@
 /** @def US_TIMEOUT
  * number of microseconds to spend when trying to send/recv */
 #define US_TIMEOUT_DEFAULT 0
+/** @def MS_DEFAULT_DELAY
+ * number of milliseconds to sleep between two probes */
+#define MS_DEFAULT_DELAY 1000
+
+
 
 /*
  * Typedef
@@ -142,9 +147,9 @@ typedef struct {
 
 /** @brief full ethernet trame, MAC headers + RARP packet as described above */
 typedef struct {
-	/** @brief Harware address of the device we send to */
+	/** @brief Harware address of the device datas are send to */
 	unsigned char  uct_destHwAddr[6];
-	/** @brief Hardware address we of the device we send from */
+	/** @brief Hardware address of the device datas are send from */
 	unsigned char  uct_senderHwAddr[6];
 	/** @brief ethertype (0x8035 for RARP)*/
 	unsigned short us_ethType;
@@ -169,6 +174,8 @@ typedef struct {
 	unsigned char uc_choosenOpCode;
 	/** @brief timeout on send/recv */
 	struct timeval str_timeout;
+	/** @brief number of milliseconds to wait between two probes */
+	unsigned long ul_waitingMilliSeconds; 
 } opt_t;
 
 
@@ -290,10 +297,10 @@ signed char sendProbe ( long l_socket, etherPacket_t * pstr_packet, struct socka
  * @brief wait for an answer and, if receive any, parse it
  * @param l_socket is the raw socket opened before
  * @param pstr_device low level informations to receive datas without any encapsulation
- * @param pstr_timing used to chronometer an dprint out how fast the received replies are
+ * @param str_sendingMoment is used to chronometer and print out how fast the received replies are
  * @return the number of replies received
  */
-unsigned char getAnswer ( long l_socket, struct sockaddr_ll * pstr_device, struct timeval * pstr_timing );
+unsigned char getAnswer ( long l_socket, struct sockaddr_ll * pstr_device, const struct timeval str_sendingMoment );
 
 
 /**
@@ -351,26 +358,16 @@ signed char setTargetIpAddress ( unsigned char * puc_targetIpAddress, const opt_
 
 
 /**
- * @brief fill a timeval struct with elapsed time from beginning to reception
- * @param pstr_wantedTimeval is the filled structure
- * @return Error code according to the execution of the function
- * @retval 0 the function ends normally
+ *
  */
-signed char chronometer ( struct timeval * pstr_wantedTimeval );
+struct timeval timeDiff ( const struct timeval str_beginning, const struct timeval str_termination );
 
 
 /**
- * @ brief alias to chronometer
- * @see chronometer
- */
-signed char chronometerInit ( struct timeval * pstr_wantedTimeval );
-
-
-/**
- * @brief print out elapsed time from a timeval structure to usual format
+ * @brief print out elapsed time from a timeval structure to usual format in milliseconds
  * @param str_time contains a number of seconds and microseconds
  */
-void printTime ( const struct timeval str_time );
+void printTime_ms ( const struct timeval str_time );
 
 
 /**
