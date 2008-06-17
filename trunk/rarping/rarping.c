@@ -390,13 +390,15 @@ unsigned char getAnswer ( long l_socket, struct sockaddr_ll * pstr_device, const
 	/* strings to print out results in a clean way */
 	char tch_replySrcIp[IP_ADDR_SIZE+1], tch_replySrcHwAddr[MAC_ADDR_SIZE+1], tch_replyHwAddr[MAC_ADDR_SIZE+1], tch_replyAddrIp[IP_ADDR_SIZE+1];
 	unsigned char uc_retValue;
-	unsigned long ul_reception;
+	unsigned long ul_addrLen; /* Address length */
+    signed long l_reception; /* Number of bytes received or error flag */
 	struct timeval str_recvMoment, str_delay; /* delay is the time elapsed between sending and reception */
 
 	/* usual initialisation */
 	uc_retValue = 1;
 	ul_reception = 0;
 	bzero(&str_reply, sizeof(etherPacket_t));
+    ul_addrLen = sizeof(struct sockaddr_ll);
 	/* strings to print results out */
 	bzero(tch_replySrcIp, IP_ADDR_SIZE+1);
 	bzero(tch_replySrcHwAddr, MAC_ADDR_SIZE+1);
@@ -408,9 +410,8 @@ unsigned char getAnswer ( long l_socket, struct sockaddr_ll * pstr_device, const
 	fprintf(stderr,"Waiting for a reply...\n");
 #endif
 
-	/* FIXME : recvfrom returns -1, but behaves correctly if we doesn't take care of the error */
 	/* Reception */
-	if ( (ul_reception = recvfrom(l_socket, &str_reply, sizeof(etherPacket_t), 0, (struct sockaddr *)pstr_device, (unsigned int *)sizeof(struct sockaddr_ll))) > 0 )
+	if ( (l_reception = recvfrom(l_socket, &str_reply, sizeof(etherPacket_t), 0, (struct sockaddr *)pstr_device, &ul_addrLen)) > 0 )
 	{
 		/* Time recording */
 		gettimeofday(&str_recvMoment, NULL);
