@@ -390,15 +390,15 @@ unsigned char getAnswer ( long l_socket, struct sockaddr_ll * pstr_device, const
 	/* strings to print out results in a clean way */
 	char tch_replySrcIp[IP_ADDR_SIZE+1], tch_replySrcHwAddr[MAC_ADDR_SIZE+1], tch_replyHwAddr[MAC_ADDR_SIZE+1], tch_replyAddrIp[IP_ADDR_SIZE+1];
 	unsigned char uc_retValue;
-	unsigned long ul_addrLen; /* Address length */
+	socklen_t addrLen_t; /* Address length */
     signed long l_reception; /* Number of bytes received or error flag */
 	struct timeval str_recvMoment, str_delay; /* delay is the time elapsed between sending and reception */
 
 	/* usual initialisation */
 	uc_retValue = 1;
-	ul_reception = 0;
+	l_reception = 0;
 	bzero(&str_reply, sizeof(etherPacket_t));
-    ul_addrLen = sizeof(struct sockaddr_ll);
+    addrLen_t = sizeof(struct sockaddr_ll);
 	/* strings to print results out */
 	bzero(tch_replySrcIp, IP_ADDR_SIZE+1);
 	bzero(tch_replySrcHwAddr, MAC_ADDR_SIZE+1);
@@ -411,33 +411,33 @@ unsigned char getAnswer ( long l_socket, struct sockaddr_ll * pstr_device, const
 #endif
 
 	/* Reception */
-	if ( (l_reception = recvfrom(l_socket, &str_reply, sizeof(etherPacket_t), 0, (struct sockaddr *)pstr_device, &ul_addrLen)) > 0 )
+	switch (l_reception = recvfrom(l_socket, &str_reply, sizeof(etherPacket_t), 0, (struct sockaddr *)pstr_device, &addrLen_t))
 	{
-		/* Time recording */
-		gettimeofday(&str_recvMoment, NULL);
-		str_delay = timeDiff(str_sendingMoment, str_recvMoment);
+		case	-1	:	/*perror("recvfrom");*/ /* FIXME : in case there is no replies, recvfrom send -1 with ressource temporarily unavailable! */
+						uc_retValue = 0;
 
-		/* If received packet is a RARP reply */
-		if ( ( (str_reply.us_ethType == htons(ETH_TYPE_RARP)) && (str_reply.str_packet.us_opcode == htons(RARP_OPCODE_REPLY)) ))
-		{
-			/* we craft strings to print results using received packet */
-			parse(&str_reply, tch_replySrcIp, tch_replySrcHwAddr, tch_replyHwAddr, tch_replyAddrIp);
-			fprintf(stdout, "Reply received from %s (%s) : %s is at %s ", tch_replySrcIp, tch_replySrcHwAddr, tch_replyHwAddr, tch_replyAddrIp);
-			printTime_ms(str_delay);
-			fprintf(stdout, "\n");
-		}
-		else
-		{
-#define __MAC(i) (str_reply.uct_senderHwAddr[(i)])
-			fprintf(stdout, "Unknown packet received (ether type = 0x%04x) from %02x:%02x:%02x:%02x:%02x:%02x ", ntohs(str_reply.us_ethType), __MAC(0), __MAC(1), __MAC(2), __MAC(3), __MAC(4), __MAC(5));
-			printTime_ms(str_delay);
-			fprintf(stdout, "\n"); 
-		}
-	}
-	else
-	{
-		perror("recvfrom");
-		uc_retValue = 0;
+		case 	0	: 	break;
+
+		default		:	/* Time recording */
+						gettimeofday(&str_recvMoment, NULL);
+						str_delay = timeDiff(str_sendingMoment, str_recvMoment);
+
+						/* If received packet is a RARP reply */
+						if ( ( (str_reply.us_ethType == htons(ETH_TYPE_RARP)) && (str_reply.str_packet.us_opcode == htons(RARP_OPCODE_REPLY)) ))
+						{
+							/* we craft strings to print results using received packet */
+							parse(&str_reply, tch_replySrcIp, tch_replySrcHwAddr, tch_replyHwAddr, tch_replyAddrIp);
+							fprintf(stdout, "Reply received from %s (%s) : %s is at %s ", tch_replySrcIp, tch_replySrcHwAddr, tch_replyHwAddr, tch_replyAddrIp);
+							printTime_ms(str_delay);
+							fprintf(stdout, "\n");
+						}
+						else
+						{
+							#define __MAC(i) (str_reply.uct_senderHwAddr[(i)])
+							fprintf(stdout, "Unknown packet received (ether type = 0x%04x) from %02x:%02x:%02x:%02x:%02x:%02x ", ntohs(str_reply.us_ethType), __MAC(0), __MAC(1), __MAC(2), __MAC(3), __MAC(4), __MAC(5));
+							printTime_ms(str_delay);
+							fprintf(stdout, "\n"); 
+						}
 	}
 
 	return uc_retValue;
