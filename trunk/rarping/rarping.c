@@ -234,13 +234,7 @@ signed char performRequests ( const opt_t *pstr_argsDest )
 		if ( craftPacket(&str_packet, pstr_argsDest, &str_device, l_socket) == 0 )
 		{
 			/* Sending/Receiving Loop */
-			if ( !bind(l_socket, (struct sockaddr *)&str_device, sizeof(str_device)) )
-				loop(pstr_argsDest, &str_packet, &str_device, l_socket);
-			else
-			{
-				perror("bind");
-				c_retValue = -2;
-			}
+			loop(pstr_argsDest, &str_packet, &str_device, l_socket);
 		}
 		else
 		{
@@ -400,7 +394,6 @@ signed char sendProbe ( long l_socket, etherPacket_t * pstr_packet, struct socka
 unsigned char getAnswer ( long l_socket, struct sockaddr_ll * pstr_device, const struct timeval str_sendingMoment )
 {
 	etherPacket_t str_reply; /* to store received datas */
-	struct in_addr str_replySrcIpAddr; /* to store the IP address of the sender of the replies */
 	struct sockaddr_ll str_from;
 	unsigned char uc_retValue;
 	socklen_t addrLen_t; /* Address length */

@@ -98,9 +98,9 @@ Rarping - send RARP REQUEST to a neighbour host.
 <p>
 <dl class="see" compact><dt><b>See also:</b></dt><dd>RFC 903</dd></dl>
 <dl class="rcs" compact><dt><b>Author</b></dt><dd>henri.doreau </dd></dl>
-<dl class="rcs" compact><dt><b>Date</b></dt><dd>2008-06-18 00:22:19 +0200 (mer, 18 jun 2008) </dd></dl>
+<dl class="rcs" compact><dt><b>Date</b></dt><dd>2008-06-18 13:23:28 +0200 (mer, 18 jun 2008) </dd></dl>
 <p>
-<dl class="rcs" compact><dt><b>Revision</b></dt><dd>29 </dd></dl>
+<dl class="rcs" compact><dt><b>Revision</b></dt><dd>30 </dd></dl>
 
 <p>Definition in file <a class="el" href="rarping_8c-source.html">rarping.c</a>.</p>
 <hr><h2>Function Documentation</h2>
@@ -218,9 +218,9 @@ find out and packs the datas we'll send
   </table>
 </dl>
 
-<p>Definition at line <a class="el" href="rarping_8c-source.html#l00265">265</a> of file <a class="el" href="rarping_8c-source.html">rarping.c</a>.</p>
+<p>Definition at line <a class="el" href="rarping_8c-source.html#l00259">259</a> of file <a class="el" href="rarping_8c-source.html">rarping.c</a>.</p>
 
-<p>References <a class="el" href="rarping_8h-source.html#l00086">ETH_TYPE_RARP</a>, <a class="el" href="rarping_8c-source.html#l00311">getLowLevelInfos()</a>, <a class="el" href="rarping_8h-source.html#l00094">HW_TYPE_ETHERNET</a>, <a class="el" href="rarping_8h-source.html#l00091">IP_PROTO</a>, <a class="el" href="rarping_8h-source.html#l00168">opt_t::pch_askedHwAddr</a>, <a class="el" href="rarping_8h-source.html#l00166">opt_t::pch_iface</a>, <a class="el" href="rarping_8c-source.html#l00602">setTargetIpAddress()</a>, <a class="el" href="rarping_8h-source.html#l00159">etherPacket_t::str_packet</a>, <a class="el" href="rarping_8h-source.html#l00178">opt_t::uc_choosenOpCode</a>, <a class="el" href="rarping_8h-source.html#l00132">rarpPacket_t::uc_hwLen</a>, <a class="el" href="rarping_8h-source.html#l00134">rarpPacket_t::uc_protoLen</a>, <a class="el" href="rarping_8h-source.html#l00151">etherPacket_t::uct_destHwAddr</a>, <a class="el" href="rarping_8h-source.html#l00153">etherPacket_t::uct_senderHwAddr</a>, <a class="el" href="rarping_8h-source.html#l00138">rarpPacket_t::uct_srcHwAddr</a>, <a class="el" href="rarping_8h-source.html#l00140">rarpPacket_t::uct_srcIpAddr</a>, <a class="el" href="rarping_8h-source.html#l00144">rarpPacket_t::uct_targetIpAddr</a>, <a class="el" href="rarping_8h-source.html#l00155">etherPacket_t::us_ethType</a>, <a class="el" href="rarping_8h-source.html#l00128">rarpPacket_t::us_hwType</a>, <a class="el" href="rarping_8h-source.html#l00136">rarpPacket_t::us_opcode</a>, and <a class="el" href="rarping_8h-source.html#l00130">rarpPacket_t::us_protoType</a>.</p>
+<p>References <a class="el" href="rarping_8h-source.html#l00086">ETH_TYPE_RARP</a>, <a class="el" href="rarping_8c-source.html#l00305">getLowLevelInfos()</a>, <a class="el" href="rarping_8h-source.html#l00094">HW_TYPE_ETHERNET</a>, <a class="el" href="rarping_8h-source.html#l00091">IP_PROTO</a>, <a class="el" href="rarping_8h-source.html#l00168">opt_t::pch_askedHwAddr</a>, <a class="el" href="rarping_8h-source.html#l00166">opt_t::pch_iface</a>, <a class="el" href="rarping_8c-source.html#l00595">setTargetIpAddress()</a>, <a class="el" href="rarping_8h-source.html#l00159">etherPacket_t::str_packet</a>, <a class="el" href="rarping_8h-source.html#l00178">opt_t::uc_choosenOpCode</a>, <a class="el" href="rarping_8h-source.html#l00132">rarpPacket_t::uc_hwLen</a>, <a class="el" href="rarping_8h-source.html#l00134">rarpPacket_t::uc_protoLen</a>, <a class="el" href="rarping_8h-source.html#l00151">etherPacket_t::uct_destHwAddr</a>, <a class="el" href="rarping_8h-source.html#l00153">etherPacket_t::uct_senderHwAddr</a>, <a class="el" href="rarping_8h-source.html#l00138">rarpPacket_t::uct_srcHwAddr</a>, <a class="el" href="rarping_8h-source.html#l00140">rarpPacket_t::uct_srcIpAddr</a>, <a class="el" href="rarping_8h-source.html#l00144">rarpPacket_t::uct_targetIpAddr</a>, <a class="el" href="rarping_8h-source.html#l00155">etherPacket_t::us_ethType</a>, <a class="el" href="rarping_8h-source.html#l00128">rarpPacket_t::us_hwType</a>, <a class="el" href="rarping_8h-source.html#l00136">rarpPacket_t::us_opcode</a>, and <a class="el" href="rarping_8h-source.html#l00130">rarpPacket_t::us_protoType</a>.</p>
 
 <p>Referenced by <a class="el" href="rarping_8c-source.html#l00214">performRequests()</a>.</p>
 
@@ -268,9 +268,9 @@ print out a summary of what happened
   </table>
 </dl>
 
-<p>Definition at line <a class="el" href="rarping_8c-source.html#l00499">499</a> of file <a class="el" href="rarping_8c-source.html">rarping.c</a>.</p>
+<p>Definition at line <a class="el" href="rarping_8c-source.html#l00492">492</a> of file <a class="el" href="rarping_8c-source.html">rarping.c</a>.</p>
 
-<p>Referenced by <a class="el" href="rarping_8c-source.html#l00214">performRequests()</a>, and <a class="el" href="rarping_8c-source.html#l00653">rarpingOnExit()</a>.</p>
+<p>Referenced by <a class="el" href="rarping_8c-source.html#l00214">performRequests()</a>, and <a class="el" href="rarping_8c-source.html#l00646">rarpingOnExit()</a>.</p>
 
 </div>
 </div><p>
@@ -317,11 +317,11 @@ wait for an answer and, if receive any, parse it
 </dl>
 <dl class="return" compact><dt><b>Returns:</b></dt><dd>the number of replies received </dd></dl>
 
-<p>Definition at line <a class="el" href="rarping_8c-source.html#l00400">400</a> of file <a class="el" href="rarping_8c-source.html">rarping.c</a>.</p>
+<p>Definition at line <a class="el" href="rarping_8c-source.html#l00394">394</a> of file <a class="el" href="rarping_8c-source.html">rarping.c</a>.</p>
 
-<p>References <a class="el" href="rarping_8c-source.html#l00441">printOutReply()</a>.</p>
+<p>References <a class="el" href="rarping_8c-source.html#l00434">printOutReply()</a>.</p>
 
-<p>Referenced by <a class="el" href="rarping_8c-source.html#l00554">loop()</a>.</p>
+<p>Referenced by <a class="el" href="rarping_8c-source.html#l00547">loop()</a>.</p>
 
 </div>
 </div><p>
@@ -361,9 +361,9 @@ get Index of used network interface
 </dl>
 <dl class="return" compact><dt><b>Returns:</b></dt><dd>interface index </dd></dl>
 
-<p>Definition at line <a class="el" href="rarping_8c-source.html#l00364">364</a> of file <a class="el" href="rarping_8c-source.html">rarping.c</a>.</p>
+<p>Definition at line <a class="el" href="rarping_8c-source.html#l00358">358</a> of file <a class="el" href="rarping_8c-source.html">rarping.c</a>.</p>
 
-<p>Referenced by <a class="el" href="rarping_8c-source.html#l00311">getLowLevelInfos()</a>.</p>
+<p>Referenced by <a class="el" href="rarping_8c-source.html#l00305">getLowLevelInfos()</a>.</p>
 
 </div>
 </div><p>
@@ -416,9 +416,9 @@ fill hw_addr field of pstr_device with local MAC address
   </table>
 </dl>
 
-<p>Definition at line <a class="el" href="rarping_8c-source.html#l00339">339</a> of file <a class="el" href="rarping_8c-source.html">rarping.c</a>.</p>
+<p>Definition at line <a class="el" href="rarping_8c-source.html#l00333">333</a> of file <a class="el" href="rarping_8c-source.html">rarping.c</a>.</p>
 
-<p>Referenced by <a class="el" href="rarping_8c-source.html#l00311">getLowLevelInfos()</a>.</p>
+<p>Referenced by <a class="el" href="rarping_8c-source.html#l00305">getLowLevelInfos()</a>.</p>
 
 </div>
 </div><p>
@@ -471,11 +471,11 @@ fills a sockaddr_ll struct whith hardware address and interface index of a selec
   </table>
 </dl>
 
-<p>Definition at line <a class="el" href="rarping_8c-source.html#l00311">311</a> of file <a class="el" href="rarping_8c-source.html">rarping.c</a>.</p>
+<p>Definition at line <a class="el" href="rarping_8c-source.html#l00305">305</a> of file <a class="el" href="rarping_8c-source.html">rarping.c</a>.</p>
 
-<p>References <a class="el" href="rarping_8c-source.html#l00364">getIfaceIndex()</a>, and <a class="el" href="rarping_8c-source.html#l00339">getLocalHardwareAddress()</a>.</p>
+<p>References <a class="el" href="rarping_8c-source.html#l00358">getIfaceIndex()</a>, and <a class="el" href="rarping_8c-source.html#l00333">getLocalHardwareAddress()</a>.</p>
 
-<p>Referenced by <a class="el" href="rarping_8c-source.html#l00265">craftPacket()</a>.</p>
+<p>Referenced by <a class="el" href="rarping_8c-source.html#l00259">craftPacket()</a>.</p>
 
 </div>
 </div><p>
@@ -568,9 +568,9 @@ sending loop : send packets as many times as wanted
   </table>
 </dl>
 
-<p>Definition at line <a class="el" href="rarping_8c-source.html#l00554">554</a> of file <a class="el" href="rarping_8c-source.html">rarping.c</a>.</p>
+<p>Definition at line <a class="el" href="rarping_8c-source.html#l00547">547</a> of file <a class="el" href="rarping_8c-source.html">rarping.c</a>.</p>
 
-<p>References <a class="el" href="rarping_8c-source.html#l00400">getAnswer()</a>, <a class="el" href="rarping_8c-source.html#l00385">sendProbe()</a>, <a class="el" href="rarping_8h-source.html#l00174">opt_t::uc_unlimitedRetries</a>, <a class="el" href="rarping_8h-source.html#l00172">opt_t::ul_count</a>, <a class="el" href="rarping_8h-source.html#l00176">opt_t::ul_maximumRetries</a>, and <a class="el" href="rarping_8h-source.html#l00182">opt_t::ul_waitingMilliSeconds</a>.</p>
+<p>References <a class="el" href="rarping_8c-source.html#l00394">getAnswer()</a>, <a class="el" href="rarping_8c-source.html#l00379">sendProbe()</a>, <a class="el" href="rarping_8h-source.html#l00174">opt_t::uc_unlimitedRetries</a>, <a class="el" href="rarping_8h-source.html#l00172">opt_t::ul_count</a>, <a class="el" href="rarping_8h-source.html#l00176">opt_t::ul_maximumRetries</a>, and <a class="el" href="rarping_8h-source.html#l00182">opt_t::ul_waitingMilliSeconds</a>.</p>
 
 <p>Referenced by <a class="el" href="rarping_8c-source.html#l00214">performRequests()</a>.</p>
 
@@ -602,7 +602,7 @@ open a raw socket and set timeout on sending and reception
 </dl>
 <dl class="return" compact><dt><b>Returns:</b></dt><dd>return code of socket() : &gt; is the socket we want, &lt; 0 if an error ocured </dd></dl>
 
-<p>Definition at line <a class="el" href="rarping_8c-source.html#l00525">525</a> of file <a class="el" href="rarping_8c-source.html">rarping.c</a>.</p>
+<p>Definition at line <a class="el" href="rarping_8c-source.html#l00518">518</a> of file <a class="el" href="rarping_8c-source.html">rarping.c</a>.</p>
 
 <p>References <a class="el" href="rarping_8h-source.html#l00068">IS_ROOT</a>.</p>
 
@@ -672,11 +672,11 @@ parse an reply packet and fill strings to print results out in a clean way
   </table>
 </dl>
 
-<p>Definition at line <a class="el" href="rarping_8c-source.html#l00466">466</a> of file <a class="el" href="rarping_8c-source.html">rarping.c</a>.</p>
+<p>Definition at line <a class="el" href="rarping_8c-source.html#l00459">459</a> of file <a class="el" href="rarping_8c-source.html">rarping.c</a>.</p>
 
 <p>References <a class="el" href="rarping_8h-source.html#l00104">IP_ADDR_SIZE</a>, <a class="el" href="rarping_8h-source.html#l00107">MAC_ADDR_SIZE</a>, <a class="el" href="rarping_8h-source.html#l00159">etherPacket_t::str_packet</a>, <a class="el" href="rarping_8h-source.html#l00140">rarpPacket_t::uct_srcIpAddr</a>, and <a class="el" href="rarping_8h-source.html#l00144">rarpPacket_t::uct_targetIpAddr</a>.</p>
 
-<p>Referenced by <a class="el" href="rarping_8c-source.html#l00441">printOutReply()</a>.</p>
+<p>Referenced by <a class="el" href="rarping_8c-source.html#l00434">printOutReply()</a>.</p>
 
 </div>
 </div><p>
@@ -751,7 +751,6 @@ perform RARP requests the way defined by user
   <table border="0" cellspacing="2" cellpadding="0">
     <tr><td valign="top"></td><td valign="top"><em>0</em>&nbsp;</td><td>The function ends normally </td></tr>
     <tr><td valign="top"></td><td valign="top"><em>-1</em>&nbsp;</td><td>can't open RAW socket </td></tr>
-    <tr><td valign="top"></td><td valign="top"><em>-2</em>&nbsp;</td><td>can't bindon specified interface </td></tr>
     <tr><td valign="top"></td><td valign="top"><em>-3</em>&nbsp;</td><td>can't craft packet </td></tr>
     <tr><td valign="top"></td><td valign="top"><em>-4</em>&nbsp;</td><td>error when closing socket </td></tr>
   </table>
@@ -759,7 +758,7 @@ perform RARP requests the way defined by user
 
 <p>Definition at line <a class="el" href="rarping_8c-source.html#l00214">214</a> of file <a class="el" href="rarping_8c-source.html">rarping.c</a>.</p>
 
-<p>References <a class="el" href="rarping_8c-source.html#l00265">craftPacket()</a>, <a class="el" href="rarping_8c-source.html#l00499">footer()</a>, <a class="el" href="rarping_8c-source.html#l00554">loop()</a>, <a class="el" href="rarping_8c-source.html#l00525">openRawSocket()</a>, and <a class="el" href="rarping_8h-source.html#l00180">opt_t::str_timeout</a>.</p>
+<p>References <a class="el" href="rarping_8c-source.html#l00259">craftPacket()</a>, <a class="el" href="rarping_8c-source.html#l00492">footer()</a>, <a class="el" href="rarping_8c-source.html#l00547">loop()</a>, <a class="el" href="rarping_8c-source.html#l00518">openRawSocket()</a>, and <a class="el" href="rarping_8h-source.html#l00180">opt_t::str_timeout</a>.</p>
 
 </div>
 </div><p>
@@ -798,11 +797,11 @@ check if received packet seems correct (or not) it and print its main informatio
   </table>
 </dl>
 
-<p>Definition at line <a class="el" href="rarping_8c-source.html#l00441">441</a> of file <a class="el" href="rarping_8c-source.html">rarping.c</a>.</p>
+<p>Definition at line <a class="el" href="rarping_8c-source.html#l00434">434</a> of file <a class="el" href="rarping_8c-source.html">rarping.c</a>.</p>
 
-<p>References <a class="el" href="rarping_8h-source.html#l00086">ETH_TYPE_RARP</a>, <a class="el" href="rarping_8h-source.html#l00104">IP_ADDR_SIZE</a>, <a class="el" href="rarping_8h-source.html#l00107">MAC_ADDR_SIZE</a>, <a class="el" href="rarping_8c-source.html#l00466">parse()</a>, <a class="el" href="rarping_8c-source.html#l00647">printTime_ms()</a>, <a class="el" href="rarping_8h-source.html#l00100">RARP_OPCODE_REPLY</a>, <a class="el" href="rarping_8h-source.html#l00159">etherPacket_t::str_packet</a>, <a class="el" href="rarping_8h-source.html#l00155">etherPacket_t::us_ethType</a>, and <a class="el" href="rarping_8h-source.html#l00136">rarpPacket_t::us_opcode</a>.</p>
+<p>References <a class="el" href="rarping_8h-source.html#l00086">ETH_TYPE_RARP</a>, <a class="el" href="rarping_8h-source.html#l00104">IP_ADDR_SIZE</a>, <a class="el" href="rarping_8h-source.html#l00107">MAC_ADDR_SIZE</a>, <a class="el" href="rarping_8c-source.html#l00459">parse()</a>, <a class="el" href="rarping_8c-source.html#l00640">printTime_ms()</a>, <a class="el" href="rarping_8h-source.html#l00100">RARP_OPCODE_REPLY</a>, <a class="el" href="rarping_8h-source.html#l00159">etherPacket_t::str_packet</a>, <a class="el" href="rarping_8h-source.html#l00155">etherPacket_t::us_ethType</a>, and <a class="el" href="rarping_8h-source.html#l00136">rarpPacket_t::us_opcode</a>.</p>
 
-<p>Referenced by <a class="el" href="rarping_8c-source.html#l00400">getAnswer()</a>.</p>
+<p>Referenced by <a class="el" href="rarping_8c-source.html#l00394">getAnswer()</a>.</p>
 
 </div>
 </div><p>
@@ -831,9 +830,9 @@ print out elapsed time from a timeval structure to usual format in milliseconds
   </table>
 </dl>
 
-<p>Definition at line <a class="el" href="rarping_8c-source.html#l00647">647</a> of file <a class="el" href="rarping_8c-source.html">rarping.c</a>.</p>
+<p>Definition at line <a class="el" href="rarping_8c-source.html#l00640">640</a> of file <a class="el" href="rarping_8c-source.html">rarping.c</a>.</p>
 
-<p>Referenced by <a class="el" href="rarping_8c-source.html#l00441">printOutReply()</a>.</p>
+<p>Referenced by <a class="el" href="rarping_8c-source.html#l00434">printOutReply()</a>.</p>
 
 </div>
 </div><p>
@@ -862,9 +861,9 @@ perform a clean exit, calling statistics function and closing the socket
   </table>
 </dl>
 
-<p>Definition at line <a class="el" href="rarping_8c-source.html#l00653">653</a> of file <a class="el" href="rarping_8c-source.html">rarping.c</a>.</p>
+<p>Definition at line <a class="el" href="rarping_8c-source.html#l00646">646</a> of file <a class="el" href="rarping_8c-source.html">rarping.c</a>.</p>
 
-<p>References <a class="el" href="rarping_8c-source.html#l00499">footer()</a>.</p>
+<p>References <a class="el" href="rarping_8c-source.html#l00492">footer()</a>.</p>
 
 <p>Referenced by <a class="el" href="rarping_8c-source.html#l00207">signalHandler()</a>.</p>
 
@@ -919,9 +918,9 @@ send RARP requests into the wild
 </dl>
 <dl class="return" compact><dt><b>Returns:</b></dt><dd>-1 can't perform sending </dd></dl>
 
-<p>Definition at line <a class="el" href="rarping_8c-source.html#l00385">385</a> of file <a class="el" href="rarping_8c-source.html">rarping.c</a>.</p>
+<p>Definition at line <a class="el" href="rarping_8c-source.html#l00379">379</a> of file <a class="el" href="rarping_8c-source.html">rarping.c</a>.</p>
 
-<p>Referenced by <a class="el" href="rarping_8c-source.html#l00554">loop()</a>.</p>
+<p>Referenced by <a class="el" href="rarping_8c-source.html#l00547">loop()</a>.</p>
 
 </div>
 </div><p>
@@ -966,16 +965,16 @@ fills target protocol address in sent packets according to user choices (option 
   </table>
 </dl>
 
-<p>Definition at line <a class="el" href="rarping_8c-source.html#l00602">602</a> of file <a class="el" href="rarping_8c-source.html">rarping.c</a>.</p>
+<p>Definition at line <a class="el" href="rarping_8c-source.html#l00595">595</a> of file <a class="el" href="rarping_8c-source.html">rarping.c</a>.</p>
 
 <p>References <a class="el" href="rarping_8h-source.html#l00170">opt_t::pch_IpAddrRarpReplies</a>.</p>
 
-<p>Referenced by <a class="el" href="rarping_8c-source.html#l00265">craftPacket()</a>.</p>
+<p>Referenced by <a class="el" href="rarping_8c-source.html#l00259">craftPacket()</a>.</p>
 
 </div>
 </div><p>
 </div>
-<hr size="1"><address style="text-align: right;"><small>Generated on Wed Jun 18 13:20:23 2008 for Rarping by&nbsp;
+<hr size="1"><address style="text-align: right;"><small>Generated on Wed Jun 18 15:10:14 2008 for Rarping by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img src="doxygen.png" alt="doxygen" align="middle" border="0"></a> 1.5.5 </small></address>
 </body>

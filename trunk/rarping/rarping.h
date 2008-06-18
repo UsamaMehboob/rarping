@@ -232,7 +232,6 @@ void signalHandler ( void );
  * @return Error code according to the execution of the function
  * @retval 0 The function ends normally
  * @retval -1 can't open RAW socket
- * @retval -2 can't bindon specified interface
  * @retval -3 can't craft packet
  * @retval -4 error when closing socket
  */
