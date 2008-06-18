@@ -53,7 +53,7 @@
  */
 /** @def VERSION
  * Software Version */
-#define VERSION "rarping 0.1 alpha"
+#define VERSION "rarping 0.1 beta"
 
 #define BOOL char
 #define FALSE 0
@@ -170,6 +170,10 @@ typedef struct {
 	char * pch_IpAddrRarpReplies;
 	/** @brief Number of requests to send */
 	unsigned long ul_count;
+	/** @brief Perform an infinite number of retries or not, boolean */
+	unsigned char uc_unlimitedRetries;
+	/** @brief if limited number of retries, this is specified here */
+	unsigned long ul_maximumRetries;
 	/** @brief type of packets to send (requests or replies) */
 	unsigned char uc_choosenOpCode;
 	/** @brief timeout on send/recv */
@@ -202,7 +206,7 @@ void parseTimeout ( struct timeval * pstr_timeout, char * pch_arg );
  * @param pst_argsDest is a structure where are stored user defined options
  * @return Error code according to the execution of the function
  * @retval 0 The function ends normally
- * @retval -1 can't parse command line
+ * @retval ERR_ARG_PARSING (< 0) can't parse command line
  * @see opt_t
  */
 signed char argumentManagement ( long l_argc, char **ppch_argv, opt_t *pstr_argsDest );
@@ -227,8 +231,10 @@ void signalHandler ( void );
  * @param pst_argsDest is an opt_t structure which contains user defined options
  * @return Error code according to the execution of the function
  * @retval 0 The function ends normally
- * @return -1 can't open RAW socket
- * @return -2 can't craft packet
+ * @retval -1 can't open RAW socket
+ * @retval -2 can't bindon specified interface
+ * @retval -3 can't craft packet
+ * @retval -4 error when closing socket
  */
 signed char performRequests ( const opt_t *pstr_argsDest );
 
@@ -301,6 +307,14 @@ signed char sendProbe ( long l_socket, etherPacket_t * pstr_packet, struct socka
  * @return the number of replies received
  */
 unsigned char getAnswer ( long l_socket, struct sockaddr_ll * pstr_device, const struct timeval str_sendingMoment );
+
+
+/**
+ * @brief check if received packet seems correct (or not) it and print its main informations
+ * @param pstr_reply points to the received packet
+ * @param str_delay is the time elapsed between sending and reeption
+ */
+void printOutReply ( etherPacket_t * pstr_reply, const struct timeval str_delay );
 
 
 /**

@@ -24,7 +24,7 @@
 <h1>opt_t Struct Reference</h1><!-- doxytag: class="opt_t" -->Contains options/informations given trought command line.  
 <a href="#_details">More...</a>
 <p>
-<code>#include &lt;rarping.h&gt;</code>
+<code>#include &lt;<a class="el" href="rarping_8h-source.html">rarping.h</a>&gt;</code>
 <p>
 <table border="0" cellpadding="0" cellspacing="0">
 <tr><td></td></tr>
@@ -45,6 +45,14 @@ char *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="st
 unsigned long&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="structopt__t.html#631547eb7f7353d5d60cfdd0ed3e2ef6">ul_count</a></td></tr>
 
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Number of requests to send. <br></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top"><a class="anchor" name="454047748937e2d336eb6479cc8375e9"></a><!-- doxytag: member="opt_t::uc_unlimitedRetries" ref="454047748937e2d336eb6479cc8375e9" args="" -->
+unsigned char&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="structopt__t.html#454047748937e2d336eb6479cc8375e9">uc_unlimitedRetries</a></td></tr>
+
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Perform an infinite number of retries or not, boolean. <br></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top"><a class="anchor" name="a97dbfbb7198291e105ef62c2132b391"></a><!-- doxytag: member="opt_t::ul_maximumRetries" ref="a97dbfbb7198291e105ef62c2132b391" args="" -->
+unsigned long&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="structopt__t.html#a97dbfbb7198291e105ef62c2132b391">ul_maximumRetries</a></td></tr>
+
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">if limited number of retries, this is specified here <br></td></tr>
 <tr><td class="memItemLeft" nowrap align="right" valign="top"><a class="anchor" name="6a380b120958b35be20702c4aa4fd983"></a><!-- doxytag: member="opt_t::uc_choosenOpCode" ref="6a380b120958b35be20702c4aa4fd983" args="" -->
 unsigned char&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="structopt__t.html#6a380b120958b35be20702c4aa4fd983">uc_choosenOpCode</a></td></tr>
 
@@ -53,12 +61,18 @@ unsigned char&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" h
 struct timeval&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="structopt__t.html#2828fe5fcdd6cbbb79b71cff0397fd23">str_timeout</a></td></tr>
 
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">timeout on send/recv <br></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top"><a class="anchor" name="a6d8b355878dd0cbb9786e2babde4110"></a><!-- doxytag: member="opt_t::ul_waitingMilliSeconds" ref="a6d8b355878dd0cbb9786e2babde4110" args="" -->
+unsigned long&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="structopt__t.html#a6d8b355878dd0cbb9786e2babde4110">ul_waitingMilliSeconds</a></td></tr>
+
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">number of milliseconds to wait between two probes <br></td></tr>
 </table>
 <hr><a name="_details"></a><h2>Detailed Description</h2>
-Contains options/informations given trought command line. <hr>The documentation for this struct was generated from the following file:<ul>
-<li>rarping/<a class="el" href="rarping_8h.html">rarping.h</a></ul>
+Contains options/informations given trought command line. 
+<p>Definition at line <a class="el" href="rarping_8h-source.html#l00164">164</a> of file <a class="el" href="rarping_8h-source.html">rarping.h</a>.</p>
+<hr>The documentation for this struct was generated from the following file:<ul>
+<li>rarping/<a class="el" href="rarping_8h-source.html">rarping.h</a></ul>
 </div>
-<hr size="1"><address style="text-align: right;"><small>Generated on Mon Jun 16 10:25:48 2008 for Rarping by&nbsp;
+<hr size="1"><address style="text-align: right;"><small>Generated on Wed Jun 18 13:20:24 2008 for Rarping by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img src="doxygen.png" alt="doxygen" align="middle" border="0"></a> 1.5.5 </small></address>
 </body>

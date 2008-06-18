@@ -19,11 +19,11 @@
 
 -- > FEATURES
 [ ] Spoof MAC address
-[ ] Spoof IP
 [X] send RARP replies instead of requests
-[X] specify IP address in RARP replies
 [ ] exit after a reply
-[ ] interval between two probes
-[X] timeout send/recv
-[ ] maximum retries
+[X] interval between two probes
+[X] maximum retries
+[ ] Perform reverse DNS on IP addresses contained in replies
+[ ] Multithread (?) flood
+[ ] @MAC prefix <==> vendor correlation on replies
 
