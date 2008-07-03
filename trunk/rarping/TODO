@@ -20,7 +20,7 @@
 -- > FEATURES
 [ ] Spoof MAC address
 [X] send RARP replies instead of requests
-[ ] exit after a reply
+[X] exit after a reply
 [X] interval between two probes
 [X] maximum retries
 [ ] Perform reverse DNS on IP addresses contained in replies

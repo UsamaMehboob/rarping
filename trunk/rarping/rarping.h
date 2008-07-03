@@ -174,6 +174,8 @@ typedef struct {
 	unsigned char uc_unlimitedRetries;
 	/** @brief if limited number of retries, this is specified here */
 	unsigned long ul_maximumRetries;
+    /** @brief as name suggests : exit after a reply */
+    unsigned char uc_exitOnReply;
 	/** @brief type of packets to send (requests or replies) */
 	unsigned char uc_choosenOpCode;
 	/** @brief timeout on send/recv */

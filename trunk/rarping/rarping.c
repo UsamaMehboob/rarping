@@ -81,7 +81,7 @@ signed char argumentManagement ( long l_argc, char **ppch_argv, opt_t *pstr_args
 
 
 	/* Parsing options args */
-	while ( ( ch_opt = getopt( l_argc, ppch_argv, "I:c:t:a:w:r:Vh" ) ) != -1 ) 
+	while ( ( ch_opt = getopt( l_argc, ppch_argv, "I:c:t:a:w:r:qVh" ) ) != -1 ) 
 	{
 		switch(ch_opt)
 		{
@@ -113,16 +113,21 @@ signed char argumentManagement ( long l_argc, char **ppch_argv, opt_t *pstr_args
 								exit(EXIT_FAILURE);
 							}
 							break;
+
 			/* retries on unanswered probes */
 			case 'r'	:	pstr_argsDest->uc_unlimitedRetries = 0;
 							pstr_argsDest->ul_maximumRetries = ABS(atol(optarg)); /* if incorrect => atol send us zero, this will be good too */
 							break;
 
+            /* exit on first catched reply */
+            case 'q'    :   pstr_argsDest->uc_exitOnReply = 1;
+                            break;
 
 			/* print version and exit */
 			case 'V'	:	fprintf(stdout, "%s\n", VERSION);
 							exit(EXIT_FAILURE);
 							break;
+
 			/* print out a short help mesage */
 			case 'h'	:
 			case '?'	:
@@ -157,6 +162,7 @@ void initOptionsDefault ( opt_t * pstr_args )
 	pstr_args->ul_count = 0;
 	pstr_args->uc_unlimitedRetries = 1; /* Default behavior is to perform an infinite number of retries */
 	pstr_args->ul_maximumRetries = 0;
+    pstr_args->uc_exitOnReply = 0;
 	pstr_args->uc_choosenOpCode = RARP_OPCODE_REQUEST;
 	pstr_args->str_timeout.tv_sec = S_TIMEOUT_DEFAULT;
 	pstr_args->str_timeout.tv_usec = US_TIMEOUT_DEFAULT;
@@ -169,6 +175,7 @@ void usage ( void )
 	fprintf(stderr, "Usage : ./rarping [options] [-I interface] request_MAC_address\n");
 	fprintf(stderr, "\t-h \t: print this screen and exit\n");
 	fprintf(stderr, "\t-V \t: print version and exit\n");
+    fprintf(stderr, "\t-q\t\t: Exit after receiving a reply\n");
 	fprintf(stderr, "\t-c [count] \t: send [count] request(s) and exit\n");
 	fprintf(stderr, "\t-a [IP address] : send replies instead of requests, [IP address] is the content of the reply\n");
 	fprintf(stderr, "\t-t [timeout] \t: set the send/recv timeout value to [timeout] milliseconds (default 1000)\n");
@@ -414,7 +421,7 @@ unsigned char getAnswer ( long l_socket, struct sockaddr_ll * pstr_device, const
 	/* Reception */
 	switch (l_reception = recvfrom(l_socket, &str_reply, sizeof(etherPacket_t), 0, (struct sockaddr *)&str_from, &addrLen_t))
 	{
-		case	-1	:	if (errno != EAGAIN ) /* EAGAIN means timeout expired */
+		case	-1	:	if (errno != EAGAIN ) /* EAGAIN means timeout were reached */
 							perror("recvfrom");
 						uc_retValue = 0;
 
@@ -583,6 +590,8 @@ signed char loop( const opt_t * pstr_argsDest, etherPacket_t * pstr_packet, stru
 				uc_received = getAnswer(l_socket, pstr_device, str_sendingMoment); /* wait for an answer and parse it */
 				ul_ReceivedReplies += uc_received; /* Total replies received */
 				ul_noReply = (uc_received) ? 0 : ul_noReply+1; /* Number of probes without answer */
+                if ( pstr_argsDest->uc_exitOnReply && ul_ReceivedReplies )
+                    break;
 			}
 			usleep(pstr_argsDest->ul_waitingMilliSeconds*1000); /* Inter probes pause */
 		}
