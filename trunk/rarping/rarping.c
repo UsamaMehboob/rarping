@@ -72,7 +72,7 @@ int main ( int i_argc, char **ppch_argv )
 signed char argumentManagement ( long l_argc, char **ppch_argv, opt_t *pstr_argsDest )
 {
 	signed char c_retValue;
-	char ch_opt;
+	long l_opt;
 
 	/* Initialisation */
 	c_retValue = 1;
@@ -81,9 +81,9 @@ signed char argumentManagement ( long l_argc, char **ppch_argv, opt_t *pstr_args
 
 
 	/* Parsing options args */
-	while ( ( ch_opt = getopt( l_argc, ppch_argv, "I:c:t:a:w:r:qVh" ) ) != -1 ) 
+	while ( ( l_opt = getopt( l_argc, ppch_argv, "I:c:t:a:w:r:qVh" ) ) != -1 ) 
 	{
-		switch(ch_opt)
+		switch(l_opt)
 		{
 			/* Interface to use */
 			case 'I'	:	pstr_argsDest->pch_iface = optarg;
