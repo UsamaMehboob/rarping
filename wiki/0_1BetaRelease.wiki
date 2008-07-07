@@ -12,6 +12,7 @@ Nevertheless, feel free to submit patches and/or suggestions if you're thinking 
 
 Following options are implemented in Version 0.1 beta (to version 0.1 stable) :
 
+  * -q APing exits (success) after the first received reply
   * -c [ _count_ ] is used to specify the number of requests to perform
   * -a [_IP address_] allows user to send replies instead of requests, [_IP address_] is the content of the reply, in `.' notation.
   * -t [_timeout_] sets the send/recv timeout value to [_timeout_] milliseconds (default 1000)
