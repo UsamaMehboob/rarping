@@ -373,7 +373,10 @@ signed char setTargetIpAddress ( unsigned char * puc_targetIpAddress, const opt_
 
 
 /**
- *
+ * @brief return elapsed time between two given moments
+ * @param str_beginning starting point
+ * @param str_termination ending point
+ * @return struct timeval containing elapsed time from str_beginning to str_termination
  */
 struct timeval timeDiff ( const struct timeval str_beginning, const struct timeval str_termination );
 
