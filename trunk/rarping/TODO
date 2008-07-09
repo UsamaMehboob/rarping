@@ -3,6 +3,13 @@
           -------------------------
 
 
+------------------------------
+[ ] To do
+[/] Currently in progress
+[X] Recently done
+------------------------------
+
+
 --> Project
 [X] split the biggest functions into smaller ones
 [ ] dispatch code into smaller files
@@ -19,11 +26,10 @@
 
 -- > FEATURES
 [ ] Spoof MAC address
+[X] Spoof IP address
 [X] send RARP replies instead of requests
 [X] exit after a reply
-[X] interval between two probes
-[X] maximum retries
 [ ] Perform reverse DNS on IP addresses contained in replies
 [ ] Multithread (?) flood
-[ ] @MAC prefix <==> vendor correlation on replies
+[/] @MAC prefix <==> vendor correlation on replies
 

@@ -168,6 +168,8 @@ typedef struct {
 	char * pch_askedHwAddr;
 	/** @brief if RARP replies are sent, this is the answer */
 	char * pch_IpAddrRarpReplies;
+    /** @brief IP address to use */
+    char * pch_spoofedLocalIpAddress;
 	/** @brief Number of requests to send */
 	unsigned long ul_count;
 	/** @brief Perform an infinite number of retries or not, boolean */
@@ -176,7 +178,7 @@ typedef struct {
 	unsigned long ul_maximumRetries;
     /** @brief as name suggests : exit after a reply */
     unsigned char uc_exitOnReply;
-	/** @brief type of packets to send (requests or replies) */
+    /** @brief type of packets to send (requests or replies) */
 	unsigned char uc_choosenOpCode;
 	/** @brief timeout on send/recv */
 	struct timeval str_timeout;
@@ -370,6 +372,18 @@ signed char loop( const opt_t * pstr_argsDest, etherPacket_t * pstr_packet, stru
  * @retval 0 the function ends normally
  */
 signed char setTargetIpAddress ( unsigned char * puc_targetIpAddress, const opt_t * pstr_argsDest );
+
+
+/**
+ * @brief set source IP address in packets to wanted values
+ * @param puc_senderIpAddress field to fill
+ * @param pstr_argsDest user options
+ * @param l_socket socket descriptor to perform ioctl calls (to find ut local real IP address)
+ * @retval error code according to the execution of the function
+ * @return 0 the function ends normally
+ * @return 1 an error occured : IP address set to its default value : 0.0.0.0
+ */
+signed char setSenderIpAddress ( unsigned char * puc_senderIpAddress, const opt_t * pstr_argsDest, long l_socket );
 
 
 /**

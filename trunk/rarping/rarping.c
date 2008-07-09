@@ -81,7 +81,7 @@ signed char argumentManagement ( long l_argc, char **ppch_argv, opt_t *pstr_args
 
 
 	/* Parsing options args */
-	while ( ( l_opt = getopt( l_argc, ppch_argv, "I:c:t:a:w:r:qVh" ) ) != -1 ) 
+	while ( ( l_opt = getopt( l_argc, ppch_argv, "I:c:t:a:w:r:s:qVh" ) ) != -1 ) 
 	{
 		switch(l_opt)
 		{
@@ -118,6 +118,10 @@ signed char argumentManagement ( long l_argc, char **ppch_argv, opt_t *pstr_args
 			case 'r'	:	pstr_argsDest->uc_unlimitedRetries = 0;
 							pstr_argsDest->ul_maximumRetries = ABS(atol(optarg)); /* if incorrect => atol send us zero, this will be good too */
 							break;
+
+            /* spoof local IP address */                
+            case 's'    :   pstr_argsDest->pch_spoofedLocalIpAddress = optarg;
+                            break;
 
             /* exit on first catched reply */
             case 'q'    :   pstr_argsDest->uc_exitOnReply = 1;
@@ -159,11 +163,13 @@ void initOptionsDefault ( opt_t * pstr_args )
 	pstr_args->pch_iface = NULL;
 	pstr_args->pch_askedHwAddr = NULL;
 	pstr_args->pch_IpAddrRarpReplies = NULL;
+    pstr_args->pch_spoofedLocalIpAddress = NULL;
 	pstr_args->ul_count = 0;
 	pstr_args->uc_unlimitedRetries = 1; /* Default behavior is to perform an infinite number of retries */
 	pstr_args->ul_maximumRetries = 0;
     pstr_args->uc_exitOnReply = 0;
-	pstr_args->uc_choosenOpCode = RARP_OPCODE_REQUEST;
+    /* pstr_args->uc_macLookup = 1; */
+    pstr_args->uc_choosenOpCode = RARP_OPCODE_REQUEST;
 	pstr_args->str_timeout.tv_sec = S_TIMEOUT_DEFAULT;
 	pstr_args->str_timeout.tv_usec = US_TIMEOUT_DEFAULT;
 	pstr_args->ul_waitingMilliSeconds = MS_DEFAULT_DELAY;	
@@ -178,6 +184,7 @@ void usage ( void )
     fprintf(stderr, "\t-q\t\t: Exit after receiving a reply\n");
 	fprintf(stderr, "\t-c [count] \t: send [count] request(s) and exit\n");
 	fprintf(stderr, "\t-a [IP address] : send replies instead of requests, [IP address] is the content of the reply\n");
+    fprintf(stderr, "\t-s [IP address] : use spoofed source IP address\n");
 	fprintf(stderr, "\t-t [timeout] \t: set the send/recv timeout value to [timeout] milliseconds (default 1000)\n");
 	fprintf(stderr, "\t-w [delay] \t: set the delay between two probes to [delay] milliseconds (default 1000)\n");
 	fprintf(stderr, "\t-r [retries]\t: Abort after [retries] unanswered probes (default none)\n");
@@ -287,9 +294,9 @@ signed char craftPacket ( etherPacket_t * pstr_packet, const opt_t * pstr_destAr
 		pstr_packet->str_packet.uc_protoLen = 4; /* Were're in IPV4 here */
 		pstr_packet->str_packet.us_opcode = htons(pstr_destArgs->uc_choosenOpCode);
 		memcpy(pstr_packet->str_packet.uct_srcHwAddr, pstr_device->sll_addr, 6);
-		/* In a RARP request these fields are undefined */
-		bzero(pstr_packet->str_packet.uct_srcIpAddr, 4);
-		/* set this field o 0 for a request, wanted IP address for a reply */
+		/* In a RARP request this field is undefined */
+		setSenderIpAddress(pstr_packet->str_packet.uct_srcIpAddr, pstr_destArgs, l_socket);
+		/* set this field to 0 for a request, wanted IP address for a reply */
 		setTargetIpAddress(pstr_packet->str_packet.uct_targetIpAddr, pstr_destArgs);
 		/* --- -- --- -- --- -- --- -- --- -- --- -- -- */
 #define MAC_FIELD(a) (&(pstr_packet->str_packet.uct_targetHwAddr[(a)]))
@@ -579,9 +586,7 @@ signed char loop( const opt_t * pstr_argsDest, etherPacket_t * pstr_packet, stru
 			else
 			{
 				ul_NbProbes++; /* Total probes sent */
-#if 0
-				ul_noReply++;  /* Number of probes sent without reply */
-#endif
+
 				gettimeofday(&str_sendingMoment, NULL); /* Record of sending timestamp */
 #ifdef DEBUG
 				fprintf(stderr, "Request #%ld sent\n", ul_NbProbes);
@@ -590,6 +595,7 @@ signed char loop( const opt_t * pstr_argsDest, etherPacket_t * pstr_packet, stru
 				uc_received = getAnswer(l_socket, pstr_device, str_sendingMoment); /* wait for an answer and parse it */
 				ul_ReceivedReplies += uc_received; /* Total replies received */
 				ul_noReply = (uc_received) ? 0 : ul_noReply+1; /* Number of probes without answer */
+
                 if ( pstr_argsDest->uc_exitOnReply && ul_ReceivedReplies )
                     break;
 			}
@@ -631,6 +637,57 @@ signed char setTargetIpAddress ( unsigned char * puc_targetIpAddress, const opt_
 	}
 
 	return c_retValue;
+}
+
+
+signed char setSenderIpAddress ( unsigned char * puc_senderIpAddress, const opt_t * pstr_argsDest, long l_socket )
+{
+  	signed char c_retValue;
+	/* struct in_addr just contains an unsigned long int */
+	struct in_addr str_tmpAddr;
+    struct ifreq str_tmpIfReq;
+
+	c_retValue = 0;
+
+	/* if user didn't choose to spoof his IP address */
+	if ( pstr_argsDest->pch_spoofedLocalIpAddress == NULL )
+	{
+		/* ... the field is set with our real IP address */
+        strncpy(str_tmpIfReq.ifr_name, pstr_argsDest->pch_iface, IFNAMSIZ-1);
+
+        if ( ioctl(l_socket, SIOCGIFADDR, &str_tmpIfReq) < 0 )
+        {
+            perror("ioctl");
+            fprintf(stderr, "Use default value : 0.0.0.0\n");
+            bzero(puc_senderIpAddress, 4);
+            c_retValue = 1;
+        }
+        else
+        {
+            struct sockaddr_in * pstr_access; /* provide a better control */
+            pstr_access = (struct sockaddr_in *) &str_tmpIfReq.ifr_addr;
+           
+            memcpy(puc_senderIpAddress, &pstr_access->sin_addr, 4);
+        }
+
+	}
+	else
+	{
+		/* inet_ntoa fills a given in_addr structure (using network byte order) with supplied IP address */
+		if ( inet_aton(pstr_argsDest->pch_spoofedLocalIpAddress, &str_tmpAddr) == 0 )
+		{
+			fprintf(stderr, "Invalid IP address : %s\nUsing default 0.0.0.0\n", pstr_argsDest->pch_spoofedLocalIpAddress);
+			bzero(puc_senderIpAddress, 4);
+            c_retValue = 1;
+		}
+		else
+		{
+			/* copy the processed IP address into the packet we'll send */
+			memcpy(puc_senderIpAddress, &str_tmpAddr, sizeof(struct in_addr));
+		}
+	}
+
+	return c_retValue;  
 }
 
 
