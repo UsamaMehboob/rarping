@@ -72,16 +72,30 @@ int main ( int i_argc, char **ppch_argv )
 signed char argumentManagement ( long l_argc, char **ppch_argv, opt_t *pstr_argsDest )
 {
 	signed char c_retValue;
-	long l_opt;
+	long l_opt, l_optIndex;
+    static struct option tstr_longOpt[] = {
+        { "interface",    required_argument, 0, 'I' },
+        { "count",        required_argument, 0, 'c' },
+        { "send-replies", required_argument, 0, 'a' },
+        { "timeout",      required_argument, 0, 't' },
+        { "delay",        required_argument, 0, 'w' },
+        { "retries",      required_argument, 0, 'r' },
+        { "source-ip",    required_argument, 0, 's' },
+        { "exit-on-reply",      no_argument, 0, 'q' },
+        { "version",            no_argument, 0, 'V' },
+        { "help",               no_argument, 0, 'h' },
+        { 0, 0, 0, 0 }
+    };
 
 	/* Initialisation */
 	c_retValue = 1;
+    l_optIndex = 0;
 	initOptionsDefault(pstr_argsDest);
 	/* ************** */
 
 
 	/* Parsing options args */
-	while ( ( l_opt = getopt( l_argc, ppch_argv, "I:c:t:a:w:r:s:qVh" ) ) != -1 ) 
+	while ( ( l_opt = getopt_long( l_argc, ppch_argv, "I:c:t:a:w:r:s:qVh", tstr_longOpt, ( int * )&l_optIndex ) ) != -1 ) 
 	{
 		switch(l_opt)
 		{
@@ -178,17 +192,41 @@ void initOptionsDefault ( opt_t * pstr_args )
 
 void usage ( void )
 {
+    /*
+     * Usage function : splitted option per option for readability issues
+     */
 	fprintf(stderr, "Usage : ./rarping [options] [-I interface] request_MAC_address\n");
-	fprintf(stderr, "\t-h \t: print this screen and exit\n");
-	fprintf(stderr, "\t-V \t: print version and exit\n");
-    fprintf(stderr, "\t-q\t\t: Exit after receiving a reply\n");
-	fprintf(stderr, "\t-c [count] \t: send [count] request(s) and exit\n");
-	fprintf(stderr, "\t-a [IP address] : send replies instead of requests, [IP address] is the content of the reply\n");
-    fprintf(stderr, "\t-s [IP address] : use spoofed source IP address\n");
-	fprintf(stderr, "\t-t [timeout] \t: set the send/recv timeout value to [timeout] milliseconds (default 1000)\n");
-	fprintf(stderr, "\t-w [delay] \t: set the delay between two probes to [delay] milliseconds (default 1000)\n");
-	fprintf(stderr, "\t-r [retries]\t: Abort after [retries] unanswered probes (default none)\n");
-	fprintf(stderr, "\t-I interface \t: network device to use (REQUIRED)\n");
+
+    fprintf(stderr, "-h, --help\n");
+    fprintf(stderr, "\tprint this screen and exit\n");
+
+	fprintf(stderr, "-V, --version\n");
+    fprintf(stderr, "\tprint version and exit\n");
+
+    fprintf(stderr, "-q, --exit-on-reply\n");
+    fprintf(stderr, "\tExit after receiving a reply\n");
+
+	fprintf(stderr, "-c, --count [count]\n");
+    fprintf(stderr, "\tsend [count] request(s) and exit\n");
+
+	fprintf(stderr, "-a, --send-replies [IP address]\n");
+    fprintf(stderr, "\tsend replies instead of requests, [IP address] is the content of the reply\n");
+
+    fprintf(stderr, "-s, --source-ip [IP address]\n");
+    fprintf(stderr, "\tuse [IP address] in sent probes instead of real one\n");
+
+	fprintf(stderr, "-t, --timeout [timeout]\n");
+    fprintf(stderr, "\tset the send/recv timeout value to [timeout] milliseconds (default 1000)\n");
+
+	fprintf(stderr, "-w, --delay [delay]\n");
+    fprintf(stderr, "\tset the delay between two probes to [delay] milliseconds (default 1000)\n");
+
+	fprintf(stderr, "-r, --retries [retries]\n");
+    fprintf(stderr, "\tabort after [retries] unanswered probes (default none)\n");
+
+	fprintf(stderr, "-I, --interface [interface]\n");
+    fprintf(stderr, "\tnetwork device to use (REQUIRED)\n");
+
 	fprintf(stderr, "request_MAC_address : hardware address we request associated IP address (REQUIRED)\n");
 	fprintf(stderr, "For example : ./rarping -I eth0 00:03:13:37:be:ef\n");
 
@@ -211,7 +249,7 @@ void parseTimeout ( struct timeval * pstr_timeout, char * pch_arg )
 	{
 		/* User specified timeout is in milliseconds and the timeval struct deals with seconds and micro-seconds */
 		pstr_timeout->tv_sec = ul_tmpTimeout/1000; /* destructive division */
-		pstr_timeout->tv_usec = (ul_tmpTimeout%(1000)) * 1000;
+		pstr_timeout->tv_usec = ( ul_tmpTimeout % 1000 ) * (long) 1000;
 	}
 
 	return;
@@ -705,7 +743,7 @@ struct timeval timeDiff ( const struct timeval str_beginning, const struct timev
 
 void printTime_ms ( const struct timeval str_time )
 {
-	fprintf(stdout, "%lu.%02lums", str_time.tv_sec*1000, str_time.tv_usec/1000);
+	fprintf(stdout, "%lu.%02lums", str_time.tv_sec * 1000, str_time.tv_usec / 1000 );
 }
 
 

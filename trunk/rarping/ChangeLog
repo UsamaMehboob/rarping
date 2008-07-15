@@ -1,9 +1,13 @@
-version 0.1 beta (xx-xx-2008)
+version 0.1 (xx-xx-2008)
+==========================================
+	- Various cool options
+	- Long options support
+
+version 0.1 beta (07-07-2008)
 ==========================================
 	- Signal handler
 	- Measure elapsed time before getting a reply
 	- Many ugly bugs fixed
-
 
 version 0.1 alpha (08-04-2008)
 ==========================================
@@ -15,4 +19,4 @@ A few files added (this changelog, TODO...)
 
 version 0.1 <dev> (29-03-2008)
 ==========================================
-    Starting Rarping
+Starting Rarping...

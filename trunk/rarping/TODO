@@ -18,7 +18,7 @@
 
 -- > SOFTWARE
 [ ] verbosity control
-[X] timing
+[X] long options support
 [X] signal handler
 [ ] separate thread to display current state on pressing <enter>
 [ ] More ways to specify delay (float, seconds, milliseconds etc...)

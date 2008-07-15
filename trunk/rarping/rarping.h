@@ -35,6 +35,7 @@
 #include <stdlib.h> /* malloc() */
 #include <string.h> /* strncpy(), memcpy() ... */
 #include <unistd.h> /* getopt() : command line parsing */
+#include <getopt.h> /* getopt() long options parsing */
 #include <sys/time.h> /* struc timeval : used to set timeout*/
 #include <signal.h> /* signal() */
 #include <errno.h>
