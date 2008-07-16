@@ -7,7 +7,7 @@ As you know, I'm trying to give RARPing enough maturity to talk about a "stable"
 But I continue to add features to RARPing, recent ones are 
 
   * -q : RARPing exits (success) after the first received reply
-  * -s [IP address] : spoof source IP address
+  * -s [ IP address ] : spoof source IP address
 
 (and RARPing use now the real IP address, instead of 0.0.0.0, in sent packets)
 
