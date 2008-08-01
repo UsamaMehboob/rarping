@@ -92,6 +92,11 @@ signed char argumentManagement ( long l_argc, char **ppch_argv, opt_t *pstr_args
     l_optIndex = 0;
 	initOptionsDefault(pstr_argsDest);
 	/* ************** */
+    /* External variables init */
+    optarg = NULL;
+    optind = 1;
+    opterr = 1; /* Set to zero to inhibit error messages on unrecognized options */
+    optopt = '?'; /* Char to return on unrecognized option */
 
 
 	/* Parsing options args */
@@ -486,14 +491,16 @@ unsigned char getAnswer ( long l_socket, struct sockaddr_ll * pstr_device, const
 void printOutReply ( etherPacket_t * pstr_reply, const struct timeval str_delay )
 {
 	/* strings to print out results in a clean way */
-	char tch_replySrcIp[IP_ADDR_SIZE+1]="", tch_replySrcHwAddr[MAC_ADDR_SIZE+1]="", tch_replyHwAddr[MAC_ADDR_SIZE+1]="", tch_replyAddrIp[IP_ADDR_SIZE+1]="";
+	char tch_replySrcIp[IP_ADDR_SIZE+1] = "", tch_replySrcHwAddr[MAC_ADDR_SIZE+1] = "", tch_replyHwAddr[MAC_ADDR_SIZE+1] = "", tch_replyAddrIp[IP_ADDR_SIZE+1] = "";
 	
 	/* If received packet is a RARP reply */
-	if ( ( (pstr_reply->us_ethType == htons(ETH_TYPE_RARP)) && (pstr_reply->str_packet.us_opcode == htons(RARP_OPCODE_REPLY)) ))
+	if ( pstr_reply->us_ethType == htons( ETH_TYPE_RARP ) )
 	{
 		/* we craft strings to print results using received packet */
 		parse(pstr_reply, tch_replySrcIp, tch_replySrcHwAddr, tch_replyHwAddr, tch_replyAddrIp);
-		fprintf(stdout, "Reply received from %s (%s) : %s is at %s ", tch_replySrcIp, tch_replySrcHwAddr, tch_replyHwAddr, tch_replyAddrIp);
+
+#define OPERATION(o) ( ( o == htons(RARP_OPCODE_REPLY) ) ? "Reply" : "Request" )
+		fprintf(stdout, "%s received from %s (%s) : %s is at %s ", OPERATION( pstr_reply->str_packet.us_opcode ), tch_replySrcIp, tch_replySrcHwAddr, tch_replyHwAddr, tch_replyAddrIp);
 		printTime_ms(str_delay);
 		fprintf(stdout, "\n");
 	}
@@ -619,7 +626,7 @@ signed char loop( const opt_t * pstr_argsDest, etherPacket_t * pstr_packet, stru
 		{
 			if (sendProbe(l_socket, pstr_packet, pstr_device) != 1)
 			{
-				fprintf(stderr, "Can't send request #%ld\n", ul_NbProbes);
+				fprintf(stderr, "Can't send request #%ld\n", ul_NbProbes++);
 			}
 			else
 			{

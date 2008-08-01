@@ -19,6 +19,7 @@
 #
 
 CC=gcc
+ECHO=echo
 
 CFLAGS=-pedantic
 DEBUG_CFLAGS=-g -DDEBUG
@@ -27,16 +28,20 @@ BASENAME=	rarping
 EXEC=$(BASENAME)
 
 
+.SILENT:
 
 all: release
 
 release: $(EXEC) $(BASENAME).c $(BASENAME).h
+	$(ECHO) "    [CC] $@"
 	$(CC) -o $(EXEC) $(CFLAGS) $(BASENAME).c
 
 debug: $(EXEC) $(BASENAME).c $(BASENAME).h
+	$(ECHO) "    [CC] $@"
 	$(CC) -o $(EXEC) $(CFLAGS) $(DEBUG_CFLAGS) $(BASENAME).c
 
 clean:
+	$(ECHO) "    [Cleaning]"
 	rm -f rarping *.o \#* *~
 
 distclean: clean
