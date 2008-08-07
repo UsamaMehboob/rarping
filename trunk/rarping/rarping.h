@@ -125,66 +125,66 @@
 
 /** @brief this describes a RARP packet */
 typedef struct {
-	/** @brief Type of hardware */
-	unsigned short us_hwType;
-	/** @brief type of protocol */
-	unsigned short us_protoType;
-	/** @brief length of hardware address in bytes */
-	unsigned char  uc_hwLen;
-	/** @brief length of the protocol address in bytes */
-	unsigned char  uc_protoLen;
-	/** @brief Operation code 3 for a request, 4 for a reply // RFC 903 */
-	unsigned short us_opcode;
-	/** @brief source hardware address */
-	unsigned char  uct_srcHwAddr[6];
-	/** @brief IP address of the source host */
-	unsigned char  uct_srcIpAddr[4];
-	/** @brief hardware address of the remote host */
-	unsigned char  uct_targetHwAddr[6];
-	/** @brief IP address of the remote host */
-	unsigned char  uct_targetIpAddr[4];
+    /** @brief Type of hardware */
+    unsigned short us_hwType;
+    /** @brief type of protocol */
+    unsigned short us_protoType;
+    /** @brief length of hardware address in bytes */
+    unsigned char  uc_hwLen;
+    /** @brief length of the protocol address in bytes */
+    unsigned char  uc_protoLen;
+    /** @brief Operation code 3 for a request, 4 for a reply // RFC 903 */
+    unsigned short us_opcode;
+    /** @brief source hardware address */
+    unsigned char  uct_srcHwAddr[6];
+    /** @brief IP address of the source host */
+    unsigned char  uct_srcIpAddr[4];
+    /** @brief hardware address of the remote host */
+    unsigned char  uct_targetHwAddr[6];
+    /** @brief IP address of the remote host */
+    unsigned char  uct_targetIpAddr[4];
 } rarpPacket_t;
 
 
 /** @brief full ethernet trame, MAC headers + RARP packet as described above */
 typedef struct {
-	/** @brief Harware address of the device datas are send to */
-	unsigned char  uct_destHwAddr[6];
-	/** @brief Hardware address of the device datas are send from */
-	unsigned char  uct_senderHwAddr[6];
-	/** @brief ethertype (0x8035 for RARP)*/
-	unsigned short us_ethType;
-	/** @brief RARP packet
-	 * @see rarpPacket_t
-	 */
-	rarpPacket_t  str_packet;
+    /** @brief Harware address of the device datas are send to */
+    unsigned char  uct_destHwAddr[6];
+    /** @brief Hardware address of the device datas are send from */
+    unsigned char  uct_senderHwAddr[6];
+    /** @brief ethertype (0x8035 for RARP)*/
+    unsigned short us_ethType;
+    /** @brief RARP packet
+     * @see rarpPacket_t
+     */
+    rarpPacket_t  str_packet;
 } etherPacket_t;
 
 
 /** @brief Contains options/informations given trought command line */
 typedef struct {
-	/** @brief choosen Interface */
-	char * pch_iface;
-	/** @brief Subject of the request(s) */
-	char * pch_askedHwAddr;
-	/** @brief if RARP replies are sent, this is the answer */
-	char * pch_IpAddrRarpReplies;
+    /** @brief choosen Interface */
+    char * pch_iface;
+    /** @brief Subject of the request(s) */
+    char * pch_askedHwAddr;
+    /** @brief if RARP replies are sent, this is the answer */
+    char * pch_IpAddrRarpReplies;
     /** @brief IP address to use */
     char * pch_spoofedLocalIpAddress;
-	/** @brief Number of requests to send */
-	unsigned long ul_count;
-	/** @brief Perform an infinite number of retries or not, boolean */
-	unsigned char uc_unlimitedRetries;
-	/** @brief if limited number of retries, this is specified here */
-	unsigned long ul_maximumRetries;
+    /** @brief Number of requests to send */
+    unsigned long ul_count;
+    /** @brief Perform an infinite number of retries or not, boolean */
+    unsigned char uc_unlimitedRetries;
+    /** @brief if limited number of retries, this is specified here */
+    unsigned long ul_maximumRetries;
     /** @brief as name suggests : exit after a reply */
     unsigned char uc_exitOnReply;
     /** @brief type of packets to send (requests or replies) */
-	unsigned char uc_choosenOpCode;
-	/** @brief timeout on send/recv */
-	struct timeval str_timeout;
-	/** @brief number of milliseconds to wait between two probes */
-	unsigned long ul_waitingMilliSeconds; 
+    unsigned char uc_choosenOpCode;
+    /** @brief timeout on send/recv */
+    struct timeval str_timeout;
+    /** @brief number of milliseconds to wait between two probes */
+    unsigned long ul_waitingMilliSeconds; 
 } opt_t;
 
 
