@@ -200,39 +200,40 @@ void usage ( void )
     /*
      * Usage function : splitted option per option for readability issues
      */
-    fprintf(stderr, "Usage : ./rarping [options] [-I interface] request_MAC_address\n"
-                    "-h, --help\n"
-                    "\tprint this screen and exit\n"
+    fprintf(stderr, "Usage : ./rarping [options] [-I interface] request_MAC_address\n" );
 
-                    "-V, --version\n"
-                    "\tprint version and exit\n"
+    fprintf(stderr, "-h, --help\n"
+                    "\tprint this screen and exit\n" );
 
-                    "-q, --exit-on-reply\n"
-                    "\tExit after receiving a reply\n"
+    fprintf(stderr, "-V, --version\n"
+                    "\tprint version and exit\n" );
 
-                    "-c, --count [count]\n"
-                    "\tsend [count] request(s) and exit\n"
+    fprintf(stderr, "-q, --exit-on-reply\n"
+                    "\tExit after receiving a reply\n" );
 
-                    "-a, --send-replies [IP address]\n"
-                    "\tsend replies instead of requests, [IP address] is the content of the reply\n"
+    fprintf(stderr, "-c, --count [count]\n"
+                    "\tsend [count] request(s) and exit\n" );
 
-                    "-s, --source-ip [IP address]\n"
-                    "\tuse [IP address] in sent probes instead of real one\n"
+    fprintf(stderr, "-a, --send-replies [IP address]\n"
+                    "\tsend replies instead of requests, [IP address] is the content of the reply\n" );
 
-                    "-t, --timeout [timeout]\n"
-                    "\tset the send/recv timeout value to [timeout] milliseconds (default 1000)\n"
+    fprintf(stderr, "-s, --source-ip [IP address]\n"
+                    "\tuse [IP address] in sent probes instead of real one\n" );
 
-                    "-w, --delay [delay]\n"
-                    "\tset the delay between two probes to [delay] milliseconds (default 1000)\n"
+    fprintf(stderr, "-t, --timeout [timeout]\n"
+                    "\tset the send/recv timeout value to [timeout] milliseconds (default 1000)\n" );
 
-                    "-r, --retries [retries]\n"
-                    "\tabort after [retries] unanswered probes (default none)\n"
+    fprintf(stderr, "-w, --delay [delay]\n"
+                    "\tset the delay between two probes to [delay] milliseconds (default 1000)\n" );
 
-                    "-I, --interface [interface]\n"
-                    "\tnetwork device to use (REQUIRED)\n"
+    fprintf(stderr, "-r, --retries [retries]\n"
+                    "\tabort after [retries] unanswered probes (default none)\n" );
 
-                    "request_MAC_address : hardware address we request associated IP address (REQUIRED)\n"
-                    "For example : ./rarping -I eth0 00:03:13:37:be:ef\n");
+    fprintf(stderr, "-I, --interface [interface]\n"
+                    "\tnetwork device to use (REQUIRED)\n" );
+
+    fprintf(stderr, "request_MAC_address : hardware address we request associated IP address (REQUIRED)\n" );
+    fprintf(stderr, "For example : ./rarping -I eth0 00:03:13:37:be:ef\n");
 }
 
 
@@ -699,14 +700,14 @@ signed char setSenderIpAddress ( unsigned char * puc_senderIpAddress, const opt_
             fprintf(stderr, "Use default value : 0.0.0.0\n");
             bzero(puc_senderIpAddress, 4);
             c_retValue = 1;
-    }
-    else
-    {
-        struct sockaddr_in * pstr_access; /* provide a better control */
-        pstr_access = (struct sockaddr_in *) &str_tmpIfReq.ifr_addr;
+        }
+        else
+        {
+            struct sockaddr_in * pstr_access; /* provide a better control */
+            pstr_access = (struct sockaddr_in *) &str_tmpIfReq.ifr_addr;
            
-        memcpy(puc_senderIpAddress, &pstr_access->sin_addr, 4);
-    }
+            memcpy(puc_senderIpAddress, &pstr_access->sin_addr, 4);
+        }
 
     }
     else
