@@ -324,21 +324,21 @@ signed char craftPacket ( etherPacket_t * pstr_packet, const opt_t * pstr_destAr
     else
     {
         /* Craft Packet */
-        memset(pstr_packet->uct_destHwAddr, 0xFF, 6);
-        memcpy(pstr_packet->uct_senderHwAddr, pstr_device->sll_addr, 6);
+        memset(pstr_packet->tuc_destHwAddr, 0xFF, 6);
+        memcpy(pstr_packet->tuc_senderHwAddr, pstr_device->sll_addr, 6);
         pstr_packet->us_ethType = htons(ETH_TYPE_RARP);
         pstr_packet->str_packet.us_hwType = htons(HW_TYPE_ETHERNET);
         pstr_packet->str_packet.us_protoType = htons(IP_PROTO);
         pstr_packet->str_packet.uc_hwLen = 6; /* length of mac address in bytes */
         pstr_packet->str_packet.uc_protoLen = 4; /* Were're in IPV4 here */
         pstr_packet->str_packet.us_opcode = htons(pstr_destArgs->uc_choosenOpCode);
-        memcpy(pstr_packet->str_packet.uct_srcHwAddr, pstr_device->sll_addr, 6);
+        memcpy(pstr_packet->str_packet.tuc_srcHwAddr, pstr_device->sll_addr, 6);
         /* In a RARP request this field is undefined */
-        setSenderIpAddress(pstr_packet->str_packet.uct_srcIpAddr, pstr_destArgs, l_socket);
+        setSenderIpAddress(pstr_packet->str_packet.tuc_srcIpAddr, pstr_destArgs, l_socket);
         /* set this field to 0 for a request, wanted IP address for a reply */
-        setTargetIpAddress(pstr_packet->str_packet.uct_targetIpAddr, pstr_destArgs);
+        setTargetIpAddress(pstr_packet->str_packet.tuc_targetIpAddr, pstr_destArgs);
         /* --- -- --- -- --- -- --- -- --- -- --- -- -- */
-#define MAC_FIELD(a) (&(pstr_packet->str_packet.uct_targetHwAddr[(a)]))
+#define MAC_FIELD(a) (&(pstr_packet->str_packet.tuc_targetHwAddr[(a)]))
         if (sscanf(pstr_destArgs->pch_askedHwAddr, "%02hhx:%02hhx:%02hhx:%02hhx:%02hhx:%02hhx", MAC_FIELD(0), MAC_FIELD(1), MAC_FIELD(2), MAC_FIELD(3), MAC_FIELD(4), MAC_FIELD(5)) != 6)
         {
             fprintf(stderr, "Unrecognised format %s for a MAC address\n", pstr_destArgs->pch_askedHwAddr);
@@ -501,7 +501,7 @@ void printOutReply ( etherPacket_t * pstr_reply, const struct timeval str_delay 
     }
     else
     {
-#define __MAC(i) (pstr_reply->uct_senderHwAddr[(i)])
+#define __MAC(i) (pstr_reply->tuc_senderHwAddr[(i)])
         fprintf(stdout, "Unknown packet received (ether type = 0x%04x) from %02x:%02x:%02x:%02x:%02x:%02x ", ntohs(pstr_reply->us_ethType), __MAC(0), __MAC(1), __MAC(2), __MAC(3), __MAC(4), __MAC(5));
         printTime_ms(str_delay);
         fprintf(stdout, "\n"); 
@@ -515,7 +515,7 @@ signed char parse ( etherPacket_t * pstr_reply, char tch_replySrcIp[], char tch_
 
     /* Fill the string tch_srcIpAddr, that is the IP address of the reply sender with the address contained in received packet */
     bzero(&str_tmpIpAddr, sizeof(struct in_addr));
-    memcpy(&str_tmpIpAddr, pstr_reply->str_packet.uct_srcIpAddr, 4);
+    memcpy(&str_tmpIpAddr, pstr_reply->str_packet.tuc_srcIpAddr, 4);
     strncpy(tch_replySrcIp, inet_ntoa(str_tmpIpAddr), IP_ADDR_SIZE);
 
     /* 
@@ -523,18 +523,18 @@ signed char parse ( etherPacket_t * pstr_reply, char tch_replySrcIp[], char tch_
      * This is the "real" answer to the request sent
      */
     bzero(&str_tmpIpAddr, sizeof(struct in_addr));
-    memcpy(&str_tmpIpAddr, pstr_reply->str_packet.uct_targetIpAddr, 4);
+    memcpy(&str_tmpIpAddr, pstr_reply->str_packet.tuc_targetIpAddr, 4);
     strncpy(tch_replyAddrIp, inet_ntoa(str_tmpIpAddr), IP_ADDR_SIZE); /* this is the answer */
 
     /* 
      * Fill the string tch_replySrcHwAddr with formatted MAC address contained in received datas
      * This is the hardware address of the sender of the parsed reply
      */
-#define MAC(i) pstr_reply->uct_senderHwAddr[(i)]
+#define MAC(i) pstr_reply->tuc_senderHwAddr[(i)]
     snprintf(tch_replySrcHwAddr, MAC_ADDR_SIZE+1, "%02x:%02x:%02x:%02x:%02x:%02x", MAC(0), MAC(1), MAC(2), MAC(3), MAC(4), MAC(5));
 
     /* The same way, but with Hardware Address of the host we requested about (this must be the same than the one specified by user)) */
-#define _MAC(i) pstr_reply->str_packet.uct_targetHwAddr[(i)]
+#define _MAC(i) pstr_reply->str_packet.tuc_targetHwAddr[(i)]
     snprintf(tch_replyHwAddr, MAC_ADDR_SIZE+1, "%02x:%02x:%02x:%02x:%02x:%02x", _MAC(0), _MAC(1), _MAC(2), _MAC(3), _MAC(4), _MAC(5));
     /* --- -- --- -- --- */
 

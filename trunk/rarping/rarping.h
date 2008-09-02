@@ -136,22 +136,22 @@ typedef struct {
     /** @brief Operation code 3 for a request, 4 for a reply // RFC 903 */
     unsigned short us_opcode;
     /** @brief source hardware address */
-    unsigned char  uct_srcHwAddr[6];
+    unsigned char  tuc_srcHwAddr[6];
     /** @brief IP address of the source host */
-    unsigned char  uct_srcIpAddr[4];
+    unsigned char  tuc_srcIpAddr[4];
     /** @brief hardware address of the remote host */
-    unsigned char  uct_targetHwAddr[6];
+    unsigned char  tuc_targetHwAddr[6];
     /** @brief IP address of the remote host */
-    unsigned char  uct_targetIpAddr[4];
+    unsigned char  tuc_targetIpAddr[4];
 } rarpPacket_t;
 
 
 /** @brief full ethernet trame, MAC headers + RARP packet as described above */
 typedef struct {
     /** @brief Harware address of the device datas are send to */
-    unsigned char  uct_destHwAddr[6];
+    unsigned char  tuc_destHwAddr[6];
     /** @brief Hardware address of the device datas are send from */
-    unsigned char  uct_senderHwAddr[6];
+    unsigned char  tuc_senderHwAddr[6];
     /** @brief ethertype (0x8035 for RARP)*/
     unsigned short us_ethType;
     /** @brief RARP packet
