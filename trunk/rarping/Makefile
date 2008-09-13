@@ -24,6 +24,8 @@ ECHO=echo
 CFLAGS=-pedantic
 DEBUG_CFLAGS=-g -DDEBUG
 
+INSTALL_DIR=/sbin
+
 BASENAME=	rarping
 EXEC=$(BASENAME)
 
@@ -39,6 +41,14 @@ release: $(EXEC) $(BASENAME).c $(BASENAME).h
 debug: $(EXEC) $(BASENAME).c $(BASENAME).h
 	$(ECHO) "    [CC] $@"
 	$(CC) -o $(EXEC) $(CFLAGS) $(DEBUG_CFLAGS) $(BASENAME).c
+
+install: $(EXEC)
+	$(ECHO) "    [Install]"
+	cp $(EXEC) $(INSTALL_DIR)/$(EXEC)
+
+uninstall:
+	$(ECHO) "    [Uninstall]"
+	rm -f $(INSTALL_DIR)/$(EXEC)
 
 clean:
 	$(ECHO) "    [Cleaning]"

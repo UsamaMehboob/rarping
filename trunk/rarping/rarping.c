@@ -297,6 +297,7 @@ signed char performRequests ( const opt_t *pstr_argsDest )
         /* This code will be executed whatever happens, except catching signals, after socket has been (correctly) opened */
         footer(ul_NbProbes, ul_ReceivedReplies);
 		
+        shutdown( l_socket, SHUT_RDWR ); /* as would do every gentleman!! */
         if (close(l_socket) < 0)
         {
             perror("close");
@@ -754,6 +755,7 @@ void rarpingOnExit( int sig )
     /* Brief summary of what were sent/received */
     footer(ul_NbProbes, ul_ReceivedReplies);
     /* We close the socket before exiting */
+    shutdown( l_SockRaw, SHUT_RDWR ); /* We are not vandals!! */
     close(l_SockRaw);
     exit(EXIT_FAILURE);
 }
