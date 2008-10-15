@@ -87,33 +87,33 @@
 
 /** @def IP_PROTO
  * IP protocole number */
-#define IP_PROTO 0x800
+#define IP_PROTO            0x800
 /** @def HW_TYPE_ETHERNET
  * hardware type (ethernet) */
-#define HW_TYPE_ETHERNET 0x01
+#define HW_TYPE_ETHERNET    0x01
 /** @def RARP_OPCODE_REQUEST
  * operation code for a RARP request */
 #define RARP_OPCODE_REQUEST 0x03
 /** @def RARP_OPCODE_REPLY
  * operation code for a RARP reply */
-#define RARP_OPCODE_REPLY 0x0004
+#define RARP_OPCODE_REPLY   0x0004
 
 /** @def IP_ADDR_SIZE
  * max length of an IP address in standard notation */
-#define IP_ADDR_SIZE 15
+#define IP_ADDR_SIZE    15
 /** @def MAC_ADDR_SIZE
  * max length of a MAC address in standard notation */
-#define MAC_ADDR_SIZE 17
+#define MAC_ADDR_SIZE   17
 
 /** @def S_TIMEOUT
  * number of seconds to spend when trying to send/recv */
-#define S_TIMEOUT_DEFAULT 1
+#define S_TIMEOUT_DEFAULT   1
 /** @def US_TIMEOUT
  * number of microseconds to spend when trying to send/recv */
-#define US_TIMEOUT_DEFAULT 0
+#define US_TIMEOUT_DEFAULT  0
 /** @def MS_DEFAULT_DELAY
  * number of milliseconds to sleep between two probes */
-#define MS_DEFAULT_DELAY 1000
+#define MS_DEFAULT_DELAY    1000
 
 
 
@@ -200,7 +200,7 @@ typedef struct {
 /**
  * @brief Usage() prints out some help to craft a correct command line
  */
-void usage ( void );
+void usage( void );
 
 
 /**
@@ -209,7 +209,7 @@ void usage ( void );
  * @param pch_arg timeout, as string, given by user through command line
  * @return none
  */
-void parseTimeout ( struct timeval * pstr_timeout, char * pch_arg );
+void parseTimeout( struct timeval * pstr_timeout, char * pch_arg );
 
 
 /**
@@ -222,7 +222,7 @@ void parseTimeout ( struct timeval * pstr_timeout, char * pch_arg );
  * @retval ERR_ARG_PARSING (< 0) can't parse command line
  * @see opt_t
  */
-signed char argumentManagement ( long l_argc, char **ppch_argv, opt_t *pstr_argsDest );
+signed char argumentManagement( long l_argc, char **ppch_argv, opt_t *pstr_argsDest );
 
 
 /**
@@ -230,13 +230,13 @@ signed char argumentManagement ( long l_argc, char **ppch_argv, opt_t *pstr_args
  * @param pstr_argsDest points to the structure where user choices are stored
  * @see opt_t
  */ 
-void initOptionsDefault ( opt_t * pstr_args );
+void initOptionsDefault( opt_t * pstr_args );
 
 
 /**
  * @brief turn on the signal handler
  */
-void signalHandler ( void );
+void signalHandler( void );
 
 
 /**
@@ -248,7 +248,7 @@ void signalHandler ( void );
  * @retval -3 can't craft packet
  * @retval -4 error when closing socket
  */
-signed char performRequests ( const opt_t *pstr_argsDest );
+signed char performRequests( const opt_t *pstr_argsDest );
 
 
 /**
@@ -263,7 +263,7 @@ signed char performRequests ( const opt_t *pstr_argsDest );
  * @retval -1 bad interface given
  * @retval -2 bad hardware address given, or unrecognized format
  */
-signed char craftPacket ( etherPacket_t * pstr_packet, const opt_t * str_destArgs, struct sockaddr_ll * pstr_device, long l_socket );
+signed char craftPacket( etherPacket_t * pstr_packet, const opt_t * str_destArgs, struct sockaddr_ll * pstr_device, long l_socket );
 
 
 /**
@@ -275,7 +275,7 @@ signed char craftPacket ( etherPacket_t * pstr_packet, const opt_t * str_destArg
  * @retval 0 the function ends normally
  * @retval -1 if function can't provide low level infos
  */
-signed char getLowLevelInfos ( struct sockaddr_ll * pstr_device, char * pch_ifaceName, long l_socket );
+signed char getLowLevelInfos( struct sockaddr_ll * pstr_device, char * pch_ifaceName, long l_socket );
 
 
 /**
@@ -287,7 +287,7 @@ signed char getLowLevelInfos ( struct sockaddr_ll * pstr_device, char * pch_ifac
  * @retval 0 the function ends normally
  * @retval -1 can't find MAC address
  */
-signed char getLocalHardwareAddress ( long l_socket, char * pch_ifaceName, unsigned char * puc_mac );
+signed char getLocalHardwareAddress( long l_socket, char * pch_ifaceName, unsigned char * puc_mac );
 
 
 /**
@@ -296,7 +296,7 @@ signed char getLocalHardwareAddress ( long l_socket, char * pch_ifaceName, unsig
  * @param l_socket raw socket opened befor
  * @return interface index
  */
-unsigned long getIfaceIndex ( char * pch_ifName, long l_socket );
+unsigned long getIfaceIndex( char * pch_ifName, long l_socket );
 
 
 /**
@@ -308,7 +308,7 @@ unsigned long getIfaceIndex ( char * pch_ifName, long l_socket );
  * @retval 0 the function ends normally
  * @return -1 can't perform sending
  */
-signed char sendProbe ( long l_socket, etherPacket_t * pstr_packet, struct sockaddr_ll * pstr_device );
+signed char sendProbe( long l_socket, etherPacket_t * pstr_packet, struct sockaddr_ll * pstr_device );
 
 
 /**
@@ -318,7 +318,7 @@ signed char sendProbe ( long l_socket, etherPacket_t * pstr_packet, struct socka
  * @param str_sendingMoment is used to chronometer and print out how fast the received replies are
  * @return the number of replies received
  */
-unsigned char getAnswer ( long l_socket, struct sockaddr_ll * pstr_device, const struct timeval str_sendingMoment );
+unsigned char getAnswer( long l_socket, struct sockaddr_ll * pstr_device, const struct timeval str_sendingMoment );
 
 
 /**
@@ -326,7 +326,7 @@ unsigned char getAnswer ( long l_socket, struct sockaddr_ll * pstr_device, const
  * @param pstr_reply points to the received packet
  * @param str_delay is the time elapsed between sending and reeption
  */
-void printOutReply ( etherPacket_t * pstr_reply, const struct timeval str_delay );
+void printOutReply( etherPacket_t * pstr_reply, const struct timeval str_delay );
 
 
 /**
@@ -339,7 +339,7 @@ void printOutReply ( etherPacket_t * pstr_reply, const struct timeval str_delay 
  * @return Error code according to the execution of the function
  * @retval 0 the function ends normally
  */
-signed char parse ( etherPacket_t * pstr_reply, char tch_replySrcIp[], char tch_replySrcHwAddr[], char tch_replyHwAddr[], char tch_replyAddrIp[] );
+signed char parse( etherPacket_t * pstr_reply, char tch_replySrcIp[], char tch_replySrcHwAddr[], char tch_replyHwAddr[], char tch_replyAddrIp[] );
 
 
 /**
@@ -350,7 +350,7 @@ signed char parse ( etherPacket_t * pstr_reply, char tch_replySrcIp[], char tch_
  * @retval 0 the function ends normally
  * @retval -1 not any packet were sent
  */
-signed char footer ( unsigned long ul_sentPackets, unsigned long ul_receivedPackets );
+signed char footer( unsigned long ul_sentPackets, unsigned long ul_receivedPackets );
 
 
 /**
@@ -358,7 +358,7 @@ signed char footer ( unsigned long ul_sentPackets, unsigned long ul_receivedPack
  * @param none
  * @return return code of socket() : > is the socket we want, < 0 if an error ocured
  */
-signed long openRawSocket ( struct timeval str_timeout );
+signed long openRawSocket( struct timeval str_timeout );
 
 
 /**
@@ -380,7 +380,7 @@ signed char loop( const opt_t * pstr_argsDest, etherPacket_t * pstr_packet, stru
  * @return Error code according to the execution of the function
  * @retval 0 the function ends normally
  */
-signed char setTargetIpAddress ( unsigned char * puc_targetIpAddress, const opt_t * pstr_argsDest );
+signed char setTargetIpAddress( unsigned char * puc_targetIpAddress, const opt_t * pstr_argsDest );
 
 
 /**
@@ -392,7 +392,7 @@ signed char setTargetIpAddress ( unsigned char * puc_targetIpAddress, const opt_
  * @return 0 the function ends normally
  * @return 1 an error occured : IP address set to its default value : 0.0.0.0
  */
-signed char setSenderIpAddress ( unsigned char * puc_senderIpAddress, const opt_t * pstr_argsDest, long l_socket );
+signed char setSenderIpAddress( unsigned char * puc_senderIpAddress, const opt_t * pstr_argsDest, long l_socket );
 
 
 /**
@@ -401,21 +401,21 @@ signed char setSenderIpAddress ( unsigned char * puc_senderIpAddress, const opt_
  * @param str_termination ending point
  * @return struct timeval containing elapsed time from str_beginning to str_termination
  */
-struct timeval timeDiff ( const struct timeval str_beginning, const struct timeval str_termination );
+struct timeval timeDiff( const struct timeval str_beginning, const struct timeval str_termination );
 
 
 /**
  * @brief print out elapsed time from a timeval structure to usual format in milliseconds
  * @param str_time contains a number of seconds and microseconds
  */
-void printTime_ms ( const struct timeval str_time );
+void printTime_ms( const struct timeval str_time );
 
 
 /**
  * @brief perform a clean exit, calling statistics function and closing the socket
  * @param int sig received signal that force rarping to exit
  */
-void rarpingOnExit ( int sig );
+void rarpingOnExit( int sig );
 /* --- -- --- -- --- -- --- -- --- -- --- -- --- */
 
 
