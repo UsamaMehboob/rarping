@@ -54,11 +54,9 @@
  */
 /** @def VERSION
  * Software Version */
-#define VERSION "rarping 0.1 beta"
+#define VERSION "rarping 0.1"
 
-#define BOOL char
-#define FALSE 0
-#define TRUE (!FALSE)
+
 
 /*
  * Macros
@@ -122,6 +120,16 @@
 /*
  * Typedef
  */
+
+
+/* What a clever idea!! Ever seen sth like this?? */
+typedef enum {
+    /* So you migth open your eyes */
+    FALSE,
+    /* I hope so!! */
+    TRUE
+} BOOL; /* is this a challenge for the most unusefull comment? */
+
 
 /** @brief this describes a RARP packet */
 typedef struct {
