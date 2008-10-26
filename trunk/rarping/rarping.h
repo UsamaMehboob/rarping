@@ -250,6 +250,10 @@ void signalHandler( void );
  */
 signed char performRequests( const opt_t *pstr_argsDest );
 
+/**
+ * @brief print out a great starting banner
+ */
+void banner( void );
 
 /**
  * @brief find out and packs the datas we'll send

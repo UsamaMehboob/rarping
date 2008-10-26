@@ -179,19 +179,18 @@ signed char argumentManagement( long l_argc, char **ppch_argv, opt_t *pstr_argsD
 
 void initOptionsDefault( opt_t * pstr_args )
 {
-    pstr_args->pch_iface = NULL;
-    pstr_args->pch_askedHwAddr = NULL;
-    pstr_args->pch_IpAddrRarpReplies = NULL;
+    pstr_args->pch_iface                 = NULL;
+    pstr_args->pch_askedHwAddr           = NULL;
+    pstr_args->pch_IpAddrRarpReplies     = NULL;
     pstr_args->pch_spoofedLocalIpAddress = NULL;
-    pstr_args->ul_count = 0;
-    pstr_args->uc_unlimitedRetries = 1; /* Default behavior is to perform an infinite number of retries */
-    pstr_args->ul_maximumRetries = 0;
-    pstr_args->uc_exitOnReply = 0;
-    /* pstr_args->uc_macLookup = 1; */
-    pstr_args->uc_choosenOpCode = RARP_OPCODE_REQUEST;
-    pstr_args->str_timeout.tv_sec = S_TIMEOUT_DEFAULT;
-    pstr_args->str_timeout.tv_usec = US_TIMEOUT_DEFAULT;
-    pstr_args->ul_waitingMilliSeconds = MS_DEFAULT_DELAY;	
+    pstr_args->ul_count                  = 0;
+    pstr_args->uc_unlimitedRetries       = 1; /* Default behavior is to perform an infinite number of retries */
+    pstr_args->ul_maximumRetries         = 0;
+    pstr_args->uc_exitOnReply            = 0;
+    pstr_args->uc_choosenOpCode          = RARP_OPCODE_REQUEST;
+    pstr_args->str_timeout.tv_sec        = S_TIMEOUT_DEFAULT;
+    pstr_args->str_timeout.tv_usec       = US_TIMEOUT_DEFAULT;
+    pstr_args->ul_waitingMilliSeconds    = MS_DEFAULT_DELAY;	
     return;
 }
 
@@ -276,6 +275,8 @@ signed char performRequests( const opt_t *pstr_argsDest )
     ul_NbProbes = 0;
     ul_ReceivedReplies = 0;
     /* --- */
+    
+    banner(); /* print out an awesome starting session banner */
 
     if ( ( l_socket = openRawSocket( pstr_argsDest->str_timeout ) ) < 0 )
     {
@@ -309,6 +310,13 @@ signed char performRequests( const opt_t *pstr_argsDest )
     return c_retValue;
 }
 
+void banner( void )
+{
+    time_t now;
+
+    time( &now );
+    fprintf( stdout, "\n--] Starting RARPing session at %s\n", ctime( &now ) );
+}
 
 signed char craftPacket( etherPacket_t * pstr_packet, const opt_t * pstr_destArgs, struct sockaddr_ll * pstr_device, long l_socket )
 {
