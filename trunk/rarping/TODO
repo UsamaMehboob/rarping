@@ -19,12 +19,15 @@
 
 
 -- > SOFTWARE
+[ ] Statistics (min/avg/mx rtt)
+[ ] Fix bug for unreplied probes
+    |_ Timers aren't resetted correctly after an unreplied probes
 [ ] verbosity control
 [X] long options support
 [X] signal handler
-[ ] separate thread to display current state on pressing <enter>
+[ ] separate thread or select() to display current state on pressing <enter>
 [ ] More ways to specify delay (float, seconds, milliseconds etc...)
-[ ] Support of non-standard replies
+[ ] Better support of non-standard replies
 
 
 -- > FEATURES

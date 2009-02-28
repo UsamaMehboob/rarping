@@ -444,7 +444,8 @@ signed char sendProbe( long l_socket, etherPacket_t * pstr_packet, struct sockad
 
     c_retValue = 1;
 
-    if ( sendto( l_socket, pstr_packet, sizeof( etherPacket_t ), 0, ( const struct sockaddr * )pstr_device, sizeof( struct sockaddr_ll ) ) <= 0 )
+    if ( sendto( l_socket, pstr_packet, sizeof( etherPacket_t ), 0, 
+                ( const struct sockaddr * )pstr_device, sizeof( struct sockaddr_ll ) ) <= 0 )
     {
         perror( "Sendto" );
         c_retValue = -1;
@@ -474,7 +475,8 @@ unsigned char getAnswer( long l_socket, struct sockaddr_ll * pstr_device, const 
 #endif
 
     /* Reception */
-    switch ( l_reception = recvfrom( l_socket, &str_reply, sizeof( etherPacket_t ), 0, ( struct sockaddr * )&str_from, &addrLen_t ) )
+    switch ( l_reception = recvfrom( l_socket, &str_reply, 
+                sizeof( etherPacket_t ), 0, ( struct sockaddr * )&str_from, &addrLen_t ) )
     {
         case    -1    :	if ( errno != EAGAIN ) /* EAGAIN means timeout were reached */
                             perror( "recvfrom" );
@@ -495,7 +497,10 @@ unsigned char getAnswer( long l_socket, struct sockaddr_ll * pstr_device, const 
 void printOutReply( etherPacket_t * pstr_reply, const struct timeval str_delay )
 {
     /* strings to print out results in a clean way */
-    char tch_replySrcIp[IP_ADDR_SIZE+1] = "", tch_replySrcHwAddr[MAC_ADDR_SIZE+1] = "", tch_replyHwAddr[MAC_ADDR_SIZE+1] = "", tch_replyAddrIp[IP_ADDR_SIZE+1] = "";
+    char tch_replySrcIp[IP_ADDR_SIZE+1]      = "", 
+         tch_replySrcHwAddr[MAC_ADDR_SIZE+1] = "", 
+         tch_replyHwAddr[MAC_ADDR_SIZE+1]    = "", 
+         tch_replyAddrIp[IP_ADDR_SIZE+1]     = "";
 	
     /* If received packet is a RARP reply */
     if ( pstr_reply->us_ethType == htons( ETH_TYPE_RARP ) )
@@ -504,14 +509,18 @@ void printOutReply( etherPacket_t * pstr_reply, const struct timeval str_delay )
         parse( pstr_reply, tch_replySrcIp, tch_replySrcHwAddr, tch_replyHwAddr, tch_replyAddrIp );
 
 #define OPERATION(o) ( ( o == htons(RARP_OPCODE_REPLY) ) ? "Reply" : "Request" )
-        fprintf( stdout, "%s received from %s (%s) : %s is at %s ", OPERATION( pstr_reply->str_packet.us_opcode ), tch_replySrcIp, tch_replySrcHwAddr, tch_replyHwAddr, tch_replyAddrIp );
+        fprintf( stdout, "%s received from %s (%s) : %s is at %s ", 
+                OPERATION( pstr_reply->str_packet.us_opcode ), 
+                tch_replySrcIp, tch_replySrcHwAddr, tch_replyHwAddr, tch_replyAddrIp );
         printTime_ms( str_delay );
         fprintf( stdout, "\n" );
     }
     else
     {
 #define __MAC(i) (pstr_reply->tuc_senderHwAddr[(i)])
-        fprintf( stdout, "Unknown packet received (ether type = 0x%04x) from %02x:%02x:%02x:%02x:%02x:%02x ", ntohs( pstr_reply->us_ethType ), __MAC(0), __MAC(1), __MAC(2), __MAC(3), __MAC(4), __MAC(5) );
+        fprintf( stdout, "Unknown packet received (ether type = 0x%04x) from %02x:%02x:%02x:%02x:%02x:%02x ", 
+                ntohs( pstr_reply->us_ethType ), 
+                __MAC(0), __MAC(1), __MAC(2), __MAC(3), __MAC(4), __MAC(5) );
         printTime_ms( str_delay );
         fprintf( stdout, "\n" ); 
     }
@@ -540,11 +549,13 @@ signed char parse( etherPacket_t * pstr_reply, char tch_replySrcIp[], char tch_r
      * This is the hardware address of the sender of the parsed reply
      */
 #define MAC(i) pstr_reply->tuc_senderHwAddr[(i)]
-    snprintf( tch_replySrcHwAddr, MAC_ADDR_SIZE+1, "%02x:%02x:%02x:%02x:%02x:%02x", MAC(0), MAC(1), MAC(2), MAC(3), MAC(4), MAC(5) );
+    snprintf( tch_replySrcHwAddr, MAC_ADDR_SIZE+1, "%02x:%02x:%02x:%02x:%02x:%02x", 
+            MAC(0), MAC(1), MAC(2), MAC(3), MAC(4), MAC(5) );
 
     /* The same way, but with Hardware Address of the host we requested about (this must be the same than the one specified by user)) */
 #define _MAC(i) pstr_reply->str_packet.tuc_targetHwAddr[(i)]
-    snprintf( tch_replyHwAddr, MAC_ADDR_SIZE+1, "%02x:%02x:%02x:%02x:%02x:%02x", _MAC(0), _MAC(1), _MAC(2), _MAC(3), _MAC(4), _MAC(5) );
+    snprintf( tch_replyHwAddr, MAC_ADDR_SIZE+1, "%02x:%02x:%02x:%02x:%02x:%02x", 
+            _MAC(0), _MAC(1), _MAC(2), _MAC(3), _MAC(4), _MAC(5) );
     /* --- -- --- -- --- */
 
     return 0;
