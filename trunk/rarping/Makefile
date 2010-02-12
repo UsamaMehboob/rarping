@@ -21,7 +21,7 @@
 CC=gcc
 ECHO=echo
 
-CFLAGS=-pedantic
+CFLAGS=-pedantic -Wall
 DEBUG_CFLAGS=-g -DDEBUG
 
 INSTALL_DIR=/sbin
@@ -30,7 +30,7 @@ BASENAME=	rarping
 EXEC=$(BASENAME)
 
 
-.SILENT:
+#.SILENT:
 
 all: release
 

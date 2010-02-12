@@ -36,6 +36,7 @@
 #include <string.h> /* strncpy(), memcpy() ... */
 #include <unistd.h> /* getopt() : command line parsing */
 #include <getopt.h> /* getopt() long options parsing */
+#include <time.h> /* time(), ctime() */
 #include <sys/time.h> /* struc timeval : used to set timeout*/
 #include <signal.h> /* signal() */
 #include <errno.h>

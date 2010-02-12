@@ -312,10 +312,12 @@ signed char performRequests( const opt_t *pstr_argsDest )
 
 void banner( void )
 {
+    char buff[26] = "";
     time_t now;
 
     time( &now );
-    fprintf( stdout, "\n--] Starting RARPing session at %s\n", ctime( &now ) );
+    ctime_r( &now, buff );
+    fprintf( stdout, "\n--] Starting RARPing session at %s\n", buff );
 }
 
 signed char craftPacket( etherPacket_t * pstr_packet, const opt_t * pstr_destArgs, struct sockaddr_ll * pstr_device, long l_socket )
